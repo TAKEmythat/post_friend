@@ -6,6 +6,7 @@ import com.cwy.post_friend.frame.annotation.ordinary.Controller;
 import com.cwy.post_friend.frame.annotation.ordinary.Dao;
 import com.cwy.post_friend.frame.annotation.ordinary.Service;
 import com.cwy.post_friend.frame.factory.BeanFactory;
+import com.cwy.post_friend.frame.proxy.DaoProxy;
 import com.cwy.post_friend.frame.tool.ScanDirectoryHasAnnotation;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -62,7 +63,7 @@ public class ProxyServlet extends HttpServlet {
                     // 如果是 Dao
                     if (clazz.getDeclaredAnnotation(Dao.class) != null) {
                         Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                                clazz.getInterfaces(), );
+                                clazz.getInterfaces(), new DaoProxy(clazz));
                     }
                 }
             }

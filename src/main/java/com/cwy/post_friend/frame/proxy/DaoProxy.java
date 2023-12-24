@@ -14,6 +14,10 @@ import java.lang.reflect.Method;
 public class DaoProxy implements InvocationHandler {
     private Object object;
 
+    public DaoProxy(Object object) {
+        this.object = object;
+    }
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         return null;
