@@ -1,19 +1,19 @@
-package com.cwy.post_friend.frame.annotation.config;
+package com.cwy.post_friend.frame.annotation.ordinary;
 
 import java.lang.annotation.*;
 
 /**
- * @Classname ScanningPackage
+ * @Classname Component
  * @Description TODO
  * @Author stomach medicine
  * @Version 1.0.0
- * @Create 2023-12-23 22:16
+ * @Create 2023-12-24 11:01
  * @Since 1.0.0
  */
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface ScanningPackage {
+public @interface Component {
     String value() default "";
 }

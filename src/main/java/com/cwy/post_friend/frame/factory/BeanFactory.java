@@ -16,11 +16,11 @@ public class BeanFactory {
     private Map<String, Object> ordinaryBeans = new HashMap<>();
     private Map<String, Object> configBeans = new HashMap<>();
 
-    void insertOrdinaryBeans(String name, Object o) {
+    public void insertOrdinaryBeans(String name, Object o) {
         ordinaryBeans.put(name, o);
     }
 
-    void insertConfigBeans(String name, Object o) {
+    public void insertConfigBeans(String name, Object o) {
         configBeans.put(name, o);
     }
 }
