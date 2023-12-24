@@ -1,11 +1,13 @@
 package com.cwy.post_friend.frame.controller;
 
+import com.cwy.post_friend.frame.annotation.reponse.Response;
 import com.cwy.post_friend.frame.annotation.request.RequestMapping;
 import com.cwy.post_friend.frame.annotation.request.RequestParam;
 import com.cwy.post_friend.frame.bean.ControllerChain;
 import com.cwy.post_friend.frame.bean.Handler;
 import com.cwy.post_friend.frame.enum_.RequestMode;
 import com.cwy.post_friend.frame.factory.RequestMap;
+import com.cwy.post_friend.frame.view.InternalResourceViewResolver;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -37,12 +40,21 @@ import java.util.function.BiConsumer;
 public class DispatcherServlet extends HttpServlet {
     private final HashMap<String, Handler> urlMapping = new HashMap<>();
 
+    private InternalResourceViewResolver internalResourceViewResolver = null;
+
     @Override
     public void init() throws ServletException {
         // 获得map路径映射
         RequestMap requestMap = RequestMap.newInstance();
         // 注册路径映射
         registerMap(requestMap);
+
+        // 视图解析器
+        String prefix = getServletConfig().getInitParameter("prefix");
+        String suffix = getServletConfig().getInitParameter("suffix");
+        internalResourceViewResolver = new InternalResourceViewResolver(prefix,suffix);
+
+
     }
 
     /**
@@ -71,7 +83,7 @@ public class DispatcherServlet extends HttpServlet {
                         String url = url_part1 + url_part2;
 
                         RequestMode mode = requestMappingAnnotation.mode();
-                        Handler handler = new Handler(obj, declaredMethod,mode);
+                        Handler handler = new Handler(obj, declaredMethod, mode);
 //                        用于参数和位置的map
                         Map<String, Integer> paramClassNameMap = handler.getParamClassNameMap();
 
@@ -120,34 +132,38 @@ public class DispatcherServlet extends HttpServlet {
 //      检测请求方法
         String method = request.getMethod();
         RequestMode requestMode = handler.getRequestMode();
-        if (!requestMode.name().equals(method)){
+        if (!requestMode.name().equals(method)) {
             response.getWriter().write("405 Method Not Allowed");
             return;
         }
 
+//      获得request的param
+        Map<String, String[]> requestParameterMap = request.getParameterMap();
 
-        Map<String, String[]> siteParameterMap = request.getParameterMap();
-
-
+//      方法需要的参数
         Map<String, Integer> paramClassNameMap = handler.getParamClassNameMap();
+//      准备存入参数列表
         Object[] paramObjects = new Object[paramClassNameMap.size()];
-        for (Object paramObject : paramObjects) {
-            paramObject = null;
-        }
+
 
 //        准备参数
-        siteParameterMap.forEach(new BiConsumer<String, String[]>() {
+        requestParameterMap.forEach(new BiConsumer<String, String[]>() {
             @Override
-            public void accept(String key ,String[] strings) {
+            public void accept(String key, String[] strings) {
+//                拼接前端传来的string 比如复选框那些多个String的内容
                 StringBuffer stringBuffer = new StringBuffer();
                 for (String s : strings) {
                     stringBuffer.append(s);
                     stringBuffer.append(",");
                 }
                 String value = stringBuffer.substring(0, stringBuffer.length() - 1);
-                if (!paramClassNameMap.containsKey(key)){
+
+//                如果方法需要的参数中没有当前遍历的这个参数
+                if (!paramClassNameMap.containsKey(key)) {
                     return;
                 }
+
+//                准备参数
                 paramObjects[paramClassNameMap.get(key)] = value;
             }
         });
@@ -156,14 +172,22 @@ public class DispatcherServlet extends HttpServlet {
         if (paramClassNameMap.containsKey(HttpServletRequest.class.getSimpleName())) {
             paramObjects[paramClassNameMap.get(HttpServletRequest.class.getSimpleName())] = request;
         }
-
         if (paramClassNameMap.containsKey(HttpServletResponse.class.getSimpleName())) {
             paramObjects[paramClassNameMap.get(HttpServletResponse.class.getSimpleName())] = response;
         }
 
 
         try {
-            Object invoke = handler.invoke(paramObjects);
+            String result = (String)handler.invoke(paramObjects);
+            Response annotation = handler.getMethod().getAnnotation(Response.class);
+            if (annotation!=null){
+                PrintWriter out = response.getWriter();
+                out.print(result);
+                out.flush();
+                return;
+            }
+            internalResourceViewResolver.render(result,request,response);
+            return;
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
