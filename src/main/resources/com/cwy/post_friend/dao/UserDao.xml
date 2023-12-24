@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <dao>
     <insert id="insertUser">
+        INSERT INTO post_friend VALUES(15, '陈伟耀')
     </insert>
 </dao>

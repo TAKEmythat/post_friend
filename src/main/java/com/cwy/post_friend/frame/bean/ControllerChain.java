@@ -5,7 +5,7 @@ import com.cwy.post_friend.frame.enum_.RequestMode;
 import java.util.Objects;
 
 /**
- * @Classname ControllerChail
+ * @Classname ControllerChain
  * @Description TODO
  * @Author stomach medicine
  * @Version 1.0.0

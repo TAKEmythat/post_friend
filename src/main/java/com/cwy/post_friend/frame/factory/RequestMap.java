@@ -15,13 +15,13 @@ import java.util.Map;
  */
 
 public class RequestMap {
-    private final Map<String, Object> requestMapping = new HashMap<>();
+    private static final Map<String, Object> requestMapping = new HashMap<>();
 
-    public void insertRequestMapping(String url, Object controller) {
+    public static void insertRequestMapping(String url, Object controller) {
         requestMapping.put(url, controller);
     }
 
-    public Object getController(String url) {
+    public static Object getController(String url) {
         return requestMapping.get(url);
     }
 }

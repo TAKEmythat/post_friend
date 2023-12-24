@@ -2,8 +2,12 @@ package com.cwy.post_friend.frame.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
+ * Dao 层的动态代理对象
+ *
  * @Classname DaoProxy
  * @Description TODO
  * @Author stomach medicine
@@ -13,6 +17,7 @@ import java.lang.reflect.Method;
  */
 public class DaoProxy implements InvocationHandler {
     private Object object;
+    private final Map<String, String> idAndSQLField = new HashMap<>();
 
     public DaoProxy(Object object) {
         this.object = object;
