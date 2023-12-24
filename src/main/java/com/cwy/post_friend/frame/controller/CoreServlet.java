@@ -7,7 +7,11 @@ import com.cwy.post_friend.frame.annotation.ordinary.Component;
 import com.cwy.post_friend.frame.annotation.ordinary.Controller;
 import com.cwy.post_friend.frame.annotation.ordinary.Dao;
 import com.cwy.post_friend.frame.annotation.ordinary.Service;
+import com.cwy.post_friend.frame.annotation.request.RequestMapping;
+import com.cwy.post_friend.frame.bean.ControllerChain;
+import com.cwy.post_friend.frame.enum_.RequestMode;
 import com.cwy.post_friend.frame.factory.BeanFactory;
+import com.cwy.post_friend.frame.factory.RequestMap;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 
@@ -37,6 +41,7 @@ import java.util.Set;
 
 public class CoreServlet extends HttpServlet {
     private final BeanFactory beanFactory = new BeanFactory();
+    private final RequestMap requestMap = new RequestMap();
 
     @Override
     public void init() throws ServletException {
@@ -65,7 +70,6 @@ public class CoreServlet extends HttpServlet {
             beanFactory.insertConfigBeans(clazz.getSimpleName(), clazz.newInstance());
             scanOrdinaryBeanWhitConfiguration();
             Map<String, Object> ordinaryBeans = beanFactory.getOrdinaryBeans();
-            System.out.println("ordinaryBeans = " + ordinaryBeans);
         }
     }
 
@@ -93,17 +97,31 @@ public class CoreServlet extends HttpServlet {
                     assert resource != null;
                     URI uri = resource.toURI();
                     File packageDir = new File(uri);
-                    List<Class<?>> classList = scanBeans(packageDir, Component.class, Dao.class, Service.class, Controller.class);
+                    List<Class<?>> classList = scanBeans(packageDir, Component.class, Dao.class,
+                            Service.class, Controller.class);
                     // 循环添加普通 Bean 到 BeanFactory 中
                     for (Class<?> clazz0 : classList) {
                         beanFactory.insertOrdinaryBeans(clazz0.getSimpleName(), clazz0.newInstance());
+                    }
+                    List<Class<?>> controllerList = scanBeans(packageDir, RequestMapping.class);
+                    // 循环添加 Controller 组件到 RequestMapping 中
+                    for (Class<?> clazz0 : controllerList) {
+                        RequestMapping requestMappingAnnotation = clazz0.getDeclaredAnnotation(RequestMapping.class);
+                        String value = requestMappingAnnotation.value();
+                        RequestMode mode = requestMappingAnnotation.mode();
+                        ControllerChain controllerChain = new ControllerChain(clazz0.newInstance(), mode);
+                        requestMap.insertRequestMapping(value ,controllerChain);
                     }
                 }
             }
         }
     }
 
+    /**
+     * 依赖注入 Bean
+     */
     public void injection() {
+        Map<String, Object> ordinaryBeans = beanFactory.getOrdinaryBeans();
 
     }
 
