@@ -4,8 +4,11 @@ import com.cwy.post_friend.frame.annotation.injection.RealBean;
 import com.cwy.post_friend.frame.annotation.ordinary.Controller;
 import com.cwy.post_friend.frame.annotation.reponse.Response;
 import com.cwy.post_friend.frame.annotation.request.RequestMapping;
+import com.cwy.post_friend.frame.annotation.request.RequestParam;
 import com.cwy.post_friend.frame.controller.DispatcherServlet;
 import com.cwy.post_friend.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * @Classname UserController
@@ -23,7 +26,8 @@ public class UserController extends DispatcherServlet {
     private UserService userService;
 
     @Response()
-    public String index() {
+    @RequestMapping(value = "/index")
+    public String index(HttpServletRequest request, HttpServletResponse response,@RequestParam("name") String name) {
         userService.register();
         return "a";
     }

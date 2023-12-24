@@ -17,12 +17,12 @@ public class Handler {
     private Object target;
     private Method method;
 
-    private List<String> paramClassNameList;
+    private Map<String,Integer> paramClassNameMap;
 
     public Handler(Object target, Method method) {
         this.target = target;
         this.method = method;
-        this.paramClassNameList = new ArrayList<String>();
+        this.paramClassNameMap = new HashMap<>();
     }
 
 
@@ -42,11 +42,11 @@ public class Handler {
         this.method = method;
     }
 
-    public List<String> getParamClassNameList() {
-        return paramClassNameList;
+    public Map<String, Integer> getParamClassNameMap() {
+        return paramClassNameMap;
     }
 
-    public void setParamClassNameList(List<String> paramClassNameList) {
-        this.paramClassNameList = paramClassNameList;
+    public void setParamClassNameMap(Map<String, Integer> paramClassNameMap) {
+        this.paramClassNameMap = paramClassNameMap;
     }
 }

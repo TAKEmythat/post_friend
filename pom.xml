@@ -7,8 +7,12 @@
     <groupId>com.cwy</groupId>
     <artifactId>post_friend</artifactId>
     <version>1.0-SNAPSHOT</version>
+
     <name>post friend</name>
+
     <packaging>war</packaging>
+
+
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
