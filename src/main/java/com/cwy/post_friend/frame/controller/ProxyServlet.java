@@ -55,7 +55,8 @@ public class ProxyServlet extends HttpServlet {
      * @throws AnnotationException    没有填写注解的错误
      * @throws ClassNotFoundException 找不到类的错误
      */
-    public List<Class<?>> scanningProjectAllClassHasAnnotation() throws URISyntaxException, AnnotationException, ClassNotFoundException {
+    public List<Class<?>> scanningProjectAllClassHasAnnotation() throws URISyntaxException,
+            AnnotationException, ClassNotFoundException {
         URL resource = Thread.currentThread().getContextClassLoader().getResource("");
         assert resource != null;
         URI uri = resource.toURI();
@@ -69,8 +70,7 @@ public class ProxyServlet extends HttpServlet {
                 if (clazz.isInterface()) {
                     // 如果是 Dao
                     if (clazz.getDeclaredAnnotation(Dao.class) != null) {
-                        String name = clazz.getName();
-                        System.out.println("name = " + name);
+                        String name = clazz.getPackageName();
                         Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                                 clazz.getInterfaces(), new DaoProxy(clazz));
                     }

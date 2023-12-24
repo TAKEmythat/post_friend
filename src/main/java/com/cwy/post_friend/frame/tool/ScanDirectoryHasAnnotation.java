@@ -5,9 +5,7 @@ import com.cwy.post_friend.exception.frame.AnnotationException;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * @Classname ScanDirectoryHasAnnotation
@@ -42,7 +40,7 @@ public class ScanDirectoryHasAnnotation {
             fileName = fileName.substring(1);
         }
         List<File> fileList = new ArrayList<>();
-        List<Class<?>> classList = new ArrayList<>();
+        Set<Class<?>> classList = new HashSet<>();
         if (annotations.length == 0) {
             throw new AnnotationException("There are no annotations available");
         }
