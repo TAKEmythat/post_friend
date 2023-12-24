@@ -7,13 +7,11 @@ import com.cwy.post_friend.frame.annotation.ordinary.Dao;
  * @Description TODO
  * @Author stomach medicine
  * @Version 1.0.0
- * @Create 2023-12-24 14:11
+ * @Create 2023-12-24 14:34
  * @Since 1.0.0
  */
 
-@Dao
+//@Dao
 public interface UserDao {
-    default void register() {
-        System.out.println("数据库正在注册用户");
-    }
+    int insertUser();
 }

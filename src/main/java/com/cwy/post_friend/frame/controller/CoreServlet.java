@@ -3,6 +3,7 @@ package com.cwy.post_friend.frame.controller;
 import com.cwy.post_friend.exception.frame.AnnotationException;
 import com.cwy.post_friend.frame.annotation.config.Allocation;
 import com.cwy.post_friend.frame.annotation.config.ScanningPackage;
+import com.cwy.post_friend.frame.annotation.injection.RealBean;
 import com.cwy.post_friend.frame.annotation.ordinary.Component;
 import com.cwy.post_friend.frame.annotation.ordinary.Controller;
 import com.cwy.post_friend.frame.annotation.ordinary.Dao;
@@ -12,18 +13,19 @@ import com.cwy.post_friend.frame.bean.ControllerChain;
 import com.cwy.post_friend.frame.enum_.RequestMode;
 import com.cwy.post_friend.frame.factory.BeanFactory;
 import com.cwy.post_friend.frame.factory.RequestMap;
+import com.cwy.post_friend.frame.tool.ScanDirectoryHasAnnotation;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 
 import java.io.File;
-import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * 整体流程：
@@ -40,14 +42,21 @@ import java.util.Set;
  */
 
 public class CoreServlet extends HttpServlet {
-    private final BeanFactory beanFactory = new BeanFactory();
+    private final BeanFactory beanFactory = BeanFactory.newInstance();
     private final RequestMap requestMap = new RequestMap();
+    private final Logger logger = Logger.getLogger("com.cwy.post_friend.frame.controller.CoreServlet");
 
     @Override
     public void init() throws ServletException {
         super.init();
         try {
+            // 扫描配置类，并且扫包，进行注入到 BeanFactory
             scanConfigurationClass();
+            // 依赖注入，通过 BeanFactory
+            injection();
+            // 输入注入后的对象
+            Map<String, Object> ordinaryBeans = beanFactory.getOrdinaryBeans();
+            logger.info("注入的对象：" + ordinaryBeans.toString());
         } catch (AnnotationException | URISyntaxException | ClassNotFoundException |
                  InstantiationException |
                  IllegalAccessException e) {
@@ -65,7 +74,7 @@ public class CoreServlet extends HttpServlet {
         assert resource != null;
         URI uri = resource.toURI();
         File dir = new File(uri);
-        List<Class<?>> classList = scanBeans(dir, Allocation.class);
+        List<Class<?>> classList = ScanDirectoryHasAnnotation.scanBeans(dir, Allocation.class);
         for (Class<?> clazz : classList) {
             beanFactory.insertConfigBeans(clazz.getSimpleName(), clazz.newInstance());
             scanOrdinaryBeanWhitConfiguration();
@@ -97,13 +106,13 @@ public class CoreServlet extends HttpServlet {
                     assert resource != null;
                     URI uri = resource.toURI();
                     File packageDir = new File(uri);
-                    List<Class<?>> classList = scanBeans(packageDir, Component.class, Dao.class,
+                    List<Class<?>> classList = ScanDirectoryHasAnnotation.scanBeans(packageDir, Component.class, Dao.class,
                             Service.class, Controller.class);
                     // 循环添加普通 Bean 到 BeanFactory 中
                     for (Class<?> clazz0 : classList) {
                         beanFactory.insertOrdinaryBeans(clazz0.getSimpleName(), clazz0.newInstance());
                     }
-                    List<Class<?>> controllerList = scanBeans(packageDir, RequestMapping.class);
+                    List<Class<?>> controllerList = ScanDirectoryHasAnnotation.scanBeans(packageDir, RequestMapping.class);
                     // 循环添加 Controller 组件到 RequestMapping 中
                     for (Class<?> clazz0 : controllerList) {
                         RequestMapping requestMappingAnnotation = clazz0.getDeclaredAnnotation(RequestMapping.class);
@@ -120,88 +129,25 @@ public class CoreServlet extends HttpServlet {
     /**
      * 依赖注入 Bean
      */
-    public void injection() {
+    public void injection() throws IllegalAccessException {
         Map<String, Object> ordinaryBeans = beanFactory.getOrdinaryBeans();
-
-    }
-
-    /**
-     * 遍历整个目录，查找任意类文件中是否有这些注解
-     *
-     * @param dir         查找的目录
-     * @param annotations 查找的注解
-     * @return 返回符合条件的类
-     * @throws AnnotationException 注解错误
-     */
-    public List<Class<?>> scanBeans(File dir, Class<?>... annotations) throws AnnotationException,
-            ClassNotFoundException {
-        List<Class<?>> classList0 = new ArrayList<>();
-        URL resource = Thread.currentThread().getContextClassLoader().getResource("");
-        String fileName = null;
-        // 为了得出项目根路径
-        if (resource != null) {
-            fileName = resource.getFile();
-            fileName = fileName.replace("/", "\\");
-            fileName = fileName.substring(1);
-        }
-        List<File> fileList = new ArrayList<>();
-        List<Class<?>> classList = new ArrayList<>();
-        if (annotations.length == 0) {
-            throw new AnnotationException("There are no annotations available");
-        }
-        // 扫描该目录下的所有文件
-        scanDir(dir, fileList);
-        // 遍历文件
-        if (fileList.size() > 0) {
-            for (File file : fileList) {
-                String absolutePath = file.getAbsolutePath();
-                assert fileName != null;
-                // 得出类文件，并且加载类文件
-                if (absolutePath.contains(fileName)) {
-                    String f = absolutePath.substring(fileName.length());
-                    f = f.substring(0, f.indexOf("."));
-                    f = f.replace("\\", ".");
-                    Class<?> clazz = Class.forName(f);
-                    classList.add(clazz);
+        Set<Map.Entry<String, Object>> entries = ordinaryBeans.entrySet();
+        // 循环遍历普通 Bean
+        for (Map.Entry<String, Object> entry : entries) {
+            Object value = entry.getValue();
+            Class<?> clazz = value.getClass();
+            Field[] declaredFields = clazz.getDeclaredFields();
+            // 循环遍历字段，并为对象的属性赋值，实现依赖注入
+            for (Field field : declaredFields) {
+                // 设置可写权限
+                field.setAccessible(true);
+                RealBean realBeanAnnotation = field.getDeclaredAnnotation(RealBean.class);
+                if (realBeanAnnotation != null) {
+                    String realBeanName = realBeanAnnotation.value();
+                    Object bean = beanFactory.getBean(realBeanName);
+                    field.set(value, bean);
                 }
             }
-        }
-        // 扫描注解
-        for (Class<?> annotation : annotations) {
-            // 遍历类
-            if (classList.size() > 0) {
-                for (Class<?> clazz : classList) {
-                    Annotation[] annotations0 = clazz.getDeclaredAnnotations();
-                    // 遍历类上面的注解
-                    for (Annotation a : annotations0) {
-                        // 如果类上面的注解与我们指定的注解相同
-                        if (a.annotationType().equals(annotation)) {
-                            classList0.add(clazz);
-                        }
-                    }
-                }
-            }
-        }
-        return classList0;
-    }
-
-
-    /**
-     * 递归这个目录，将所有文件保存到 fileList
-     *
-     * @param dir      被递归的目录
-     * @param fileList 被保存的 fileList
-     */
-    public void scanDir(File dir, List<File> fileList) {
-        if (dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            if (files != null && files.length >= 1) {
-                for (File file : files) {
-                    scanDir(file, fileList);
-                }
-            }
-        } else {
-            fileList.add(dir);
         }
     }
 }

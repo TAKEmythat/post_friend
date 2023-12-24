@@ -3,13 +3,25 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
+    <!-- 核心 Servlet -->
     <servlet>
         <servlet-name>coreServlet</servlet-name>
         <servlet-class>com.cwy.post_friend.frame.controller.CoreServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>10</load-on-startup>
     </servlet>
     <servlet-mapping>
         <servlet-name>coreServlet</servlet-name>
-        <url-pattern>/coreServlet/aa/bb/index.html</url-pattern>
+        <url-pattern>/coreServlet//////////coreServlet</url-pattern>
+    </servlet-mapping>
+
+    <!-- 创建代理对象的 Servlet -->
+    <servlet>
+        <servlet-name>proxyServlet</servlet-name>
+        <servlet-class>com.cwy.post_friend.frame.controller.ProxyServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>proxyServlet</servlet-name>
+        <url-pattern>/proxyServlet//////////proxyServlet</url-pattern>
     </servlet-mapping>
 </web-app>
