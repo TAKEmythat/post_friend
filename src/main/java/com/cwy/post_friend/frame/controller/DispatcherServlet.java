@@ -69,11 +69,7 @@ public class DispatcherServlet extends HttpServlet {
 //        path = /3324
         String path = request.getPathInfo();
 
-//        获得 程序员 注册的Controller
-        Object controller = requestMap.getController(path);
-//      获得类对象，试图获得方法
-        Class<?> aClass = controller.getClass();
-        Method[] methods = aClass.getDeclaredMethods();
+
 
 
     }
