@@ -29,7 +29,7 @@ import java.util.function.BiConsumer;
  * @date: 2023/12/24 15:22
  * @version: 1.0
  */
-@WebServlet("/*")
+@WebServlet(value = "/*", loadOnStartup = 3)
 public class DispatcherServlet extends HttpServlet {
     private final HashMap<String,Handler> urlMapping = new HashMap<>();
 
