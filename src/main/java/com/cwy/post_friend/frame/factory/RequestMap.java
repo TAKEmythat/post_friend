@@ -22,11 +22,18 @@ public class RequestMap {
         return requestMap;
     }
 
-    public static void insertRequestMapping(String url, Object controller) {
+    public Map<String, Object> getRequestMapping(){
+        return requestMapping;
+    }
+
+    public void insertRequestMapping(String url, Object controller) {
         requestMapping.put(url, controller);
     }
 
-    public static Object getController(String url) {
+    public Object getController(String url) {
         return requestMapping.get(url);
     }
+
+
+
 }
