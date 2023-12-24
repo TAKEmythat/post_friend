@@ -4,6 +4,7 @@ import com.cwy.post_friend.frame.annotation.injection.RealBean;
 import com.cwy.post_friend.frame.annotation.ordinary.Controller;
 import com.cwy.post_friend.frame.annotation.reponse.Response;
 import com.cwy.post_friend.frame.annotation.request.RequestMapping;
+import com.cwy.post_friend.frame.controller.DispatcherServlet;
 import com.cwy.post_friend.service.UserService;
 
 /**
@@ -17,7 +18,7 @@ import com.cwy.post_friend.service.UserService;
 
 @Controller
 @RequestMapping(value = "/user")
-public class UserController {
+public class UserController extends DispatcherServlet {
     @RealBean("UserServiceImpl")
     private UserService userService;
 
