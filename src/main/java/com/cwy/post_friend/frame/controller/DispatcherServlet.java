@@ -59,7 +59,7 @@ public class DispatcherServlet extends HttpServlet {
                 Object obj = o1.getController();
                 Class<?> clazz = obj.getClass();
 
-//              遍历方法 拿到注解RequestMapping上的路径
+                // 遍历方法 拿到注解RequestMapping上的路径
                 Method[] declaredMethods = clazz.getDeclaredMethods();
                 for (Method declaredMethod : declaredMethods) {
                     RequestMapping requestMappingAnnotation = declaredMethod.getAnnotation(RequestMapping.class);
@@ -68,12 +68,12 @@ public class DispatcherServlet extends HttpServlet {
                         String url = url_part1 + url_part2;
 
                         Handler handler = new Handler(obj, declaredMethod);
-//                        用于参数和位置的map
+                        //  用于参数和位置的map
                         Map<String, Integer> paramClassNameMap = handler.getParamClassNameMap();
 
                         Parameter[] parameters = declaredMethod.getParameters();
                         for (int i = 0; i < parameters.length; i++) {
-//                            req和resp存简单类名，其他的存形参名称
+                            // req和resp存简单类名，其他的存形参名称
                             if (parameters[i].getType() == HttpServletRequest.class ||
                                     parameters[i].getType() == HttpServletResponse.class) {
                                 paramClassNameMap.put(parameters[i].getType().getSimpleName(), i);
@@ -101,18 +101,16 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//     请求的路径
-//        http://localhost:8080/post_friend_war_exploded/3324?name=hmj
-//        path = /3324
+        // 请求的路径
+        // http://localhost:8080/post_friend_war_exploded/3324?name=hmj
+        // path = /3324
         String path = request.getPathInfo();
 
         Handler handler = urlMapping.get(path);
         if (handler == null) {
-//            没有匹配的处理器
+            // 没有匹配的处理器
             response.getWriter().write("404 not found");
             return;
         }
-
-
     }
 }
