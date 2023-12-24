@@ -13,6 +13,6 @@ import com.cwy.post_friend.frame.annotation.config.ScanningPackage;
  */
 
 @Allocation
-@ScanningPackage
+@ScanningPackage({"com.cwy.post_friend.controller"})
 public class ControllerConfig {
 }

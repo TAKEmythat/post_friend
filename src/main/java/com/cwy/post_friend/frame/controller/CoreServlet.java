@@ -2,6 +2,11 @@ package com.cwy.post_friend.frame.controller;
 
 import com.cwy.post_friend.exception.frame.AnnotationException;
 import com.cwy.post_friend.frame.annotation.config.Allocation;
+import com.cwy.post_friend.frame.annotation.config.ScanningPackage;
+import com.cwy.post_friend.frame.annotation.ordinary.Component;
+import com.cwy.post_friend.frame.annotation.ordinary.Controller;
+import com.cwy.post_friend.frame.annotation.ordinary.Dao;
+import com.cwy.post_friend.frame.annotation.ordinary.Service;
 import com.cwy.post_friend.frame.factory.BeanFactory;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -13,11 +18,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 整体流程：
- * 1. 扫描配置类
- * 2. 扫描配置类的包
+ * 1. 扫描配置类，注入到 BeanFactory
+ * 2. 扫描配置类的包，扫描包下的普通组件，注入到 BeanFactory
+ * 3. 通过 BeanFactory 然后注入
  *
  * @Classname CoreServlet
  * @Description TODO
@@ -45,7 +53,8 @@ public class CoreServlet extends HttpServlet {
     /**
      * 扫描配置类
      */
-    public void scanConfigurationClass() throws AnnotationException, URISyntaxException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public void scanConfigurationClass() throws AnnotationException, URISyntaxException,
+            ClassNotFoundException, InstantiationException, IllegalAccessException {
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         URL resource = contextClassLoader.getResource("");
         assert resource != null;
@@ -53,8 +62,49 @@ public class CoreServlet extends HttpServlet {
         File dir = new File(uri);
         List<Class<?>> classList = scanBeans(dir, Allocation.class);
         for (Class<?> clazz : classList) {
-            beanFactory.insertConfigBeans(clazz.getName(), clazz.newInstance());
+            beanFactory.insertConfigBeans(clazz.getSimpleName(), clazz.newInstance());
+            scanOrdinaryBeanWhitConfiguration();
+            Map<String, Object> ordinaryBeans = beanFactory.getOrdinaryBeans();
+            System.out.println("ordinaryBeans = " + ordinaryBeans);
         }
+    }
+
+    /**
+     * 扫描配置类上的配置的包，扫描配置的包
+     * 扫描包下的所有普通 Bean，然后存储到 BeanFactory 中
+     */
+    public void scanOrdinaryBeanWhitConfiguration() throws URISyntaxException, AnnotationException,
+            ClassNotFoundException, InstantiationException, IllegalAccessException {
+        Map<String, Object> configBeans = beanFactory.getConfigBeans();
+        Set<Map.Entry<String, Object>> configEntry = configBeans.entrySet();
+        // 遍历该配置 Bean
+        for (Map.Entry<String, Object> entry : configEntry) {
+            Object configBean = entry.getValue();
+            Class<?> clazz = configBean.getClass();
+            ScanningPackage scanningPackage =
+                    clazz.getDeclaredAnnotation(ScanningPackage.class);
+            // 扫描配置类的注解配置
+            if (scanningPackage != null) {
+                String[] packages = scanningPackage.value();
+                // 扫描包配置注解上的 value
+                for (String s : packages) {
+                    s = s.replace(".", "\\");
+                    URL resource = Thread.currentThread().getContextClassLoader().getResource(s);
+                    assert resource != null;
+                    URI uri = resource.toURI();
+                    File packageDir = new File(uri);
+                    List<Class<?>> classList = scanBeans(packageDir, Component.class, Dao.class, Service.class, Controller.class);
+                    // 循环添加普通 Bean 到 BeanFactory 中
+                    for (Class<?> clazz0 : classList) {
+                        beanFactory.insertOrdinaryBeans(clazz0.getSimpleName(), clazz0.newInstance());
+                    }
+                }
+            }
+        }
+    }
+
+    public void injection() {
+
     }
 
     /**
@@ -83,23 +133,23 @@ public class CoreServlet extends HttpServlet {
         }
         // 扫描该目录下的所有文件
         scanDir(dir, fileList);
-        // 扫描注解
-        for (Class<?> annotation : annotations) {
-            // 遍历文件
-            if (fileList.size() > 0) {
-                for (File file : fileList) {
-                    String absolutePath = file.getAbsolutePath();
-                    assert fileName != null;
-                    // 得出类文件，并且加载类文件
-                    if (absolutePath.contains(fileName)) {
-                        String f = absolutePath.substring(fileName.length());
-                        f = f.substring(0, f.indexOf("."));
-                        f = f.replace("\\", ".");
-                        Class<?> clazz = Class.forName(f);
-                        classList.add(clazz);
-                    }
+        // 遍历文件
+        if (fileList.size() > 0) {
+            for (File file : fileList) {
+                String absolutePath = file.getAbsolutePath();
+                assert fileName != null;
+                // 得出类文件，并且加载类文件
+                if (absolutePath.contains(fileName)) {
+                    String f = absolutePath.substring(fileName.length());
+                    f = f.substring(0, f.indexOf("."));
+                    f = f.replace("\\", ".");
+                    Class<?> clazz = Class.forName(f);
+                    classList.add(clazz);
                 }
             }
+        }
+        // 扫描注解
+        for (Class<?> annotation : annotations) {
             // 遍历类
             if (classList.size() > 0) {
                 for (Class<?> clazz : classList) {
@@ -135,16 +185,5 @@ public class CoreServlet extends HttpServlet {
         } else {
             fileList.add(dir);
         }
-    }
-
-    /**
-     * 检查是否为配置类
-     *
-     * @param clazz 被检查的类
-     * @return 是否为配置类
-     */
-    public boolean isConfigClass(Class<?> clazz) {
-        Allocation annotation = clazz.getDeclaredAnnotation(Allocation.class);
-        return annotation != null;
     }
 }

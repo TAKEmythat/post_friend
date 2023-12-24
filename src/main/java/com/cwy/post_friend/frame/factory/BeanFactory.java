@@ -13,8 +13,8 @@ import java.util.Map;
  */
 
 public class BeanFactory {
-    private Map<String, Object> ordinaryBeans = new HashMap<>();
-    private Map<String, Object> configBeans = new HashMap<>();
+    private final Map<String, Object> ordinaryBeans = new HashMap<>();
+    private final Map<String, Object> configBeans = new HashMap<>();
 
     public void insertOrdinaryBeans(String name, Object o) {
         ordinaryBeans.put(name, o);
@@ -22,5 +22,21 @@ public class BeanFactory {
 
     public void insertConfigBeans(String name, Object o) {
         configBeans.put(name, o);
+    }
+
+    public Map<String, Object> getOrdinaryBeans() {
+        return ordinaryBeans;
+    }
+
+    public Map<String, Object> getConfigBeans() {
+        return configBeans;
+    }
+
+    public Object getBean(String name) {
+        return ordinaryBeans.get(name);
+    }
+
+    public Object getConfigBean(String name) {
+        return configBeans.get(name);
     }
 }
