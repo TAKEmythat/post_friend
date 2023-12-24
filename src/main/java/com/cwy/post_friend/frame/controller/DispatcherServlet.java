@@ -4,6 +4,7 @@ import com.cwy.post_friend.frame.annotation.request.RequestMapping;
 import com.cwy.post_friend.frame.annotation.request.RequestParam;
 import com.cwy.post_friend.frame.bean.ControllerChain;
 import com.cwy.post_friend.frame.bean.Handler;
+import com.cwy.post_friend.frame.factory.BeanFactory;
 import com.cwy.post_friend.frame.factory.RequestMap;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

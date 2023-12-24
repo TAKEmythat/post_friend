@@ -23,6 +23,7 @@ import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,10 +45,10 @@ public class ProxyServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         try {
-            // 扫描项目中有指定注解的类
-            List<Class<?>> classList = scanningProjectAllClassHasAnnotation();
+            // 扫描并代理项目中有指定注解的类
+            scanningProjectAllClassHasAnnotation();
         } catch (URISyntaxException | AnnotationException | ClassNotFoundException | ParserConfigurationException |
-                 IOException | SAXException e) {
+                 IOException | SAXException | InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
         super.init();
@@ -56,13 +57,13 @@ public class ProxyServlet extends HttpServlet {
     /**
      * 扫描整个项目有指定注解的类
      *
-     * @return 返回指定注解的类
      * @throws URISyntaxException     找不到资源的错误
      * @throws AnnotationException    没有填写注解的错误
      * @throws ClassNotFoundException 找不到类的错误
      */
-    public List<Class<?>> scanningProjectAllClassHasAnnotation() throws URISyntaxException,
-            AnnotationException, ClassNotFoundException, ParserConfigurationException, IOException, SAXException {
+    public void scanningProjectAllClassHasAnnotation() throws URISyntaxException,
+            AnnotationException, ClassNotFoundException, ParserConfigurationException, IOException, SAXException, InstantiationException, IllegalAccessException {
+        List<Class<?>> clazzList = new ArrayList<>();
         URL resource = Thread.currentThread().getContextClassLoader().getResource("");
         assert resource != null;
         URI uri = resource.toURI();
@@ -72,18 +73,16 @@ public class ProxyServlet extends HttpServlet {
         // 循环所有类，检查是否为接口
         if (classList.size() > 0) {
             for (Class<?> clazz : classList) {
-                // 如果是接口，则生成代理类
-                if (clazz.isInterface()) {
-                    // 如果是 Dao
-                    if (clazz.getDeclaredAnnotation(Dao.class) != null) {
-                        String clazzName = clazz.getName();
-                        XMLObject xmlObject = XMLAnalysis.getXmlObject(clazzName.replace(".", "\\") + ".xml");
-                        Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                                clazz.getInterfaces(), new DaoProxy(clazz, xmlObject));
-                    }
+                // 如果是 Dao
+                if (clazz.getDeclaredAnnotation(Dao.class) != null) {
+                    String clazzName = clazz.getName();
+                    XMLObject xmlObject = XMLAnalysis.getXmlObject(clazzName.replace(".", "\\") + ".xml");
+                    DaoProxy daoProxy = new DaoProxy(clazz.newInstance(), xmlObject);
+                    Object o = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+                            clazz.getInterfaces(), daoProxy);
+                    beanFactory.insertOrdinaryBeans(clazzName.substring(clazzName.lastIndexOf(".") + 1), o);
                 }
             }
         }
-        return null;
     }
 }

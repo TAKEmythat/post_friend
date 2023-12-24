@@ -27,7 +27,7 @@ public class Test0 {
      */
     @Test
     public void test0_0() throws URISyntaxException, ParserConfigurationException, IOException, SAXException {
-        XMLObject xmlObject = XMLAnalysis.getXmlObject("com/cwy/post_friend/dao/UserDao.xml");
+        XMLObject xmlObject = XMLAnalysis.getXmlObject("com/cwy/post_friend/dao/impl/UserDaoImpl.xml");
         System.out.println("xmlObject = " + xmlObject);
     }
 }

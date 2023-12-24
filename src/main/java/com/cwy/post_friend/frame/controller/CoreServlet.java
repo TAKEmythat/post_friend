@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServlet;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -110,7 +111,9 @@ public class CoreServlet extends HttpServlet {
                             Service.class, Controller.class);
                     // 循环添加普通 Bean 到 BeanFactory 中
                     for (Class<?> clazz0 : classList) {
-                        beanFactory.insertOrdinaryBeans(clazz0.getSimpleName(), clazz0.newInstance());
+                        if (!clazz0.isInterface()) {
+                            beanFactory.insertOrdinaryBeans(clazz0.getSimpleName(), clazz0.newInstance());
+                        }
                     }
                     List<Class<?>> controllerList = ScanDirectoryHasAnnotation.scanBeans(packageDir, RequestMapping.class);
                     // 循环添加 Controller 组件到 RequestMapping 中
@@ -119,7 +122,7 @@ public class CoreServlet extends HttpServlet {
                         String value = requestMappingAnnotation.value();
                         RequestMode mode = requestMappingAnnotation.mode();
                         ControllerChain controllerChain = new ControllerChain(clazz0.newInstance(), mode);
-                        requestMap.insertRequestMapping(value ,controllerChain);
+                        requestMap.insertRequestMapping(value, controllerChain);
                     }
                 }
             }
@@ -139,10 +142,10 @@ public class CoreServlet extends HttpServlet {
             Field[] declaredFields = clazz.getDeclaredFields();
             // 循环遍历字段，并为对象的属性赋值，实现依赖注入
             for (Field field : declaredFields) {
-                // 设置可写权限
-                field.setAccessible(true);
                 RealBean realBeanAnnotation = field.getDeclaredAnnotation(RealBean.class);
                 if (realBeanAnnotation != null) {
+                    // 设置可写权限
+                    field.setAccessible(true);
                     String realBeanName = realBeanAnnotation.value();
                     Object bean = beanFactory.getBean(realBeanName);
                     field.set(value, bean);

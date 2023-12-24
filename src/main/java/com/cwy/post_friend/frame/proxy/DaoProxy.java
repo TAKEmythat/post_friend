@@ -18,12 +18,11 @@ import java.util.Map;
  * @Since 1.0.0
  */
 public class DaoProxy implements InvocationHandler {
-    private Object object;
+    private Object target;
     private XMLObject xmlObject;
 
-
-    public DaoProxy(Object object, XMLObject xmlObject) {
-        this.object = object;
+    public DaoProxy(Object target, XMLObject xmlObject) {
+        this.target = target;
         this.xmlObject = xmlObject;
     }
 

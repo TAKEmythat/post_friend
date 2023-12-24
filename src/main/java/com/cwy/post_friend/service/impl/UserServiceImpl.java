@@ -16,7 +16,7 @@ import com.cwy.post_friend.service.UserService;
 
 @Service
 public class UserServiceImpl implements UserService {
-    @RealBean("UserDao")
+    @RealBean("UserDaoImpl")
     private UserDao userDao;
 
     @Override

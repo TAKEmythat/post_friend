@@ -49,6 +49,10 @@ public class ScanDirectoryHasAnnotation {
         // 遍历文件
         if (fileList.size() > 0) {
             for (File file : fileList) {
+                String substring = file.getName().substring(file.getName().lastIndexOf(".") + 1);
+                if (!substring.equals("class")) {
+                    continue;
+                }
                 String absolutePath = file.getAbsolutePath();
                 assert fileName != null;
                 // 得出类文件，并且加载类文件
