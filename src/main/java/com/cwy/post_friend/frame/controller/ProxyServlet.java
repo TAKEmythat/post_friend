@@ -38,14 +38,21 @@ public class ProxyServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
+        try {
+            // 扫描项目中有指定注解的类
+            List<Class<?>> classList = scanningProjectAllClassHasAnnotation();
+        } catch (URISyntaxException | AnnotationException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         super.init();
     }
 
     /**
      * 扫描整个项目有指定注解的类
+     *
      * @return 返回指定注解的类
-     * @throws URISyntaxException 找不到资源的错误
-     * @throws AnnotationException 没有填写注解的错误
+     * @throws URISyntaxException     找不到资源的错误
+     * @throws AnnotationException    没有填写注解的错误
      * @throws ClassNotFoundException 找不到类的错误
      */
     public List<Class<?>> scanningProjectAllClassHasAnnotation() throws URISyntaxException, AnnotationException, ClassNotFoundException {
@@ -62,6 +69,8 @@ public class ProxyServlet extends HttpServlet {
                 if (clazz.isInterface()) {
                     // 如果是 Dao
                     if (clazz.getDeclaredAnnotation(Dao.class) != null) {
+                        String name = clazz.getName();
+                        System.out.println("name = " + name);
                         Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                                 clazz.getInterfaces(), new DaoProxy(clazz));
                     }
