@@ -1,6 +1,7 @@
 package com.cwy.post_friend.frame.controller;
 
 import com.cwy.post_friend.frame.annotation.request.RequestMapping;
+import com.cwy.post_friend.frame.bean.Handler;
 import com.cwy.post_friend.frame.factory.RequestMap;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -10,7 +11,9 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -28,7 +31,7 @@ import java.util.function.BiConsumer;
  */
 @WebServlet("/*")
 public class DispatcherServlet extends HttpServlet {
-    private HashMap urlMapping = new HashMap();
+    private final HashMap<String,Handler> urlMapping = new HashMap<>();
 
     @Override
     public void init() throws ServletException {
@@ -40,6 +43,7 @@ public class DispatcherServlet extends HttpServlet {
 
     /**
      * 将给的RequestMap映射 注册到本类的属性urlMapping中备用
+     *
      * @param requestMap
      */
     private void registerMap(RequestMap requestMap) {
@@ -47,15 +51,27 @@ public class DispatcherServlet extends HttpServlet {
 
         requestMapping.forEach(new BiConsumer<String, Object>() {
             @Override
-            public void accept(String s, Object o) {
+            public void accept(String url_part1, Object o) {
                 Class<?> clazz = o.getClass();
 
 //              遍历方法 拿到注解RequestMapping上的路径
                 Method[] declaredMethods = clazz.getDeclaredMethods();
                 for (Method declaredMethod : declaredMethods) {
                     RequestMapping requestMappingAnnotation = declaredMethod.getAnnotation(RequestMapping.class);
-                    if (requestMappingAnnotation != null){
-                        requestMappingAnnotation.value();
+                    if (requestMappingAnnotation != null) {
+                        String url_part2 = requestMappingAnnotation.value();
+                        String url = url_part1 + url_part2;
+
+                        Handler handler = new Handler(o, declaredMethod);
+//                        用于参数和位置的map
+                        List<String> paramClassNameList = handler.getParamClassNameList();
+
+                        Parameter[] parameters = declaredMethod.getParameters();
+                        for (int i = 0; i < parameters.length; i++) {
+                            paramClassNameList.add(parameters.getClass().getSimpleName());
+                        }
+
+                        urlMapping.put(url,handler);
                     }
                 }
             }
@@ -65,11 +81,11 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 //     请求的路径
-//        http://localhost:8080/post_friend_war_exploded/3324
+//        http://localhost:8080/post_friend_war_exploded/3324?name=hmj
 //        path = /3324
         String path = request.getPathInfo();
 
-
+        Handler handler = urlMapping.get(path);
 
 
     }
