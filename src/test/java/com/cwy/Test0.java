@@ -18,6 +18,13 @@ import java.net.URISyntaxException;
  * @Since 1.0.0
  */
 public class Test0 {
+    /**
+     * 检查那个解析 XML 工具类的可用性
+     * @throws URISyntaxException ...
+     * @throws ParserConfigurationException ...
+     * @throws IOException ...
+     * @throws SAXException ...
+     */
     @Test
     public void test0_0() throws URISyntaxException, ParserConfigurationException, IOException, SAXException {
         XMLObject xmlObject = XMLAnalysis.getXmlObject("com/cwy/post_friend/dao/UserDao.xml");

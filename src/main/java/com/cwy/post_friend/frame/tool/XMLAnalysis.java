@@ -44,12 +44,17 @@ public class XMLAnalysis {
      */
     public static XMLObject getXmlObject(String fileName) throws URISyntaxException,
             ParserConfigurationException, IOException, SAXException {
-        XMLObject xmlObject = new XMLObject();
-        List<XMLLabel> xmlLabels = new ArrayList<>();
         URL resource = Thread.currentThread().getContextClassLoader().getResource(fileName);
         assert resource != null;
         URI uri = resource.toURI();
         File file = new File(uri);
+        return getXmlObject(file);
+    }
+
+    public static XMLObject getXmlObject(File file) throws ParserConfigurationException,
+            IOException, SAXException {
+        XMLObject xmlObject = new XMLObject();
+        List<XMLLabel> xmlLabels = new ArrayList<>();
         xmlObject.setXmlName(file.getName());
         DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document parse = documentBuilder.parse(file);
@@ -58,8 +63,7 @@ public class XMLAnalysis {
         int length = childNodes.getLength();
         for (int i = 0; i < length; i++) {
             Node item = childNodes.item(i);
-            if (item instanceof Element) {
-                Element element = (Element) item;
+            if (item instanceof Element element) {
                 String tagName = element.getTagName();
                 String nodeValue = element.getTextContent();
                 NamedNodeMap attributes0 = element.getAttributes();
@@ -76,9 +80,5 @@ public class XMLAnalysis {
         }
         xmlObject.setXmlLabels(xmlLabels);
         return xmlObject;
-    }
-
-    public static XMLObject getXmlObject(File file) {
-        return null;
     }
 }

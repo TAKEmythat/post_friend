@@ -5,13 +5,18 @@ import com.cwy.post_friend.frame.annotation.ordinary.Component;
 import com.cwy.post_friend.frame.annotation.ordinary.Controller;
 import com.cwy.post_friend.frame.annotation.ordinary.Dao;
 import com.cwy.post_friend.frame.annotation.ordinary.Service;
+import com.cwy.post_friend.frame.bean.XMLObject;
 import com.cwy.post_friend.frame.factory.BeanFactory;
 import com.cwy.post_friend.frame.proxy.DaoProxy;
 import com.cwy.post_friend.frame.tool.ScanDirectoryHasAnnotation;
+import com.cwy.post_friend.frame.tool.XMLAnalysis;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -41,7 +46,8 @@ public class ProxyServlet extends HttpServlet {
         try {
             // 扫描项目中有指定注解的类
             List<Class<?>> classList = scanningProjectAllClassHasAnnotation();
-        } catch (URISyntaxException | AnnotationException | ClassNotFoundException e) {
+        } catch (URISyntaxException | AnnotationException | ClassNotFoundException | ParserConfigurationException |
+                 IOException | SAXException e) {
             throw new RuntimeException(e);
         }
         super.init();
@@ -56,7 +62,7 @@ public class ProxyServlet extends HttpServlet {
      * @throws ClassNotFoundException 找不到类的错误
      */
     public List<Class<?>> scanningProjectAllClassHasAnnotation() throws URISyntaxException,
-            AnnotationException, ClassNotFoundException {
+            AnnotationException, ClassNotFoundException, ParserConfigurationException, IOException, SAXException {
         URL resource = Thread.currentThread().getContextClassLoader().getResource("");
         assert resource != null;
         URI uri = resource.toURI();
@@ -70,9 +76,10 @@ public class ProxyServlet extends HttpServlet {
                 if (clazz.isInterface()) {
                     // 如果是 Dao
                     if (clazz.getDeclaredAnnotation(Dao.class) != null) {
-                        String name = clazz.getPackageName();
+                        String clazzName = clazz.getName();
+                        XMLObject xmlObject = XMLAnalysis.getXmlObject(clazzName.replace(".", "\\") + ".xml");
                         Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                                clazz.getInterfaces(), new DaoProxy(clazz));
+                                clazz.getInterfaces(), new DaoProxy(clazz, xmlObject));
                     }
                 }
             }

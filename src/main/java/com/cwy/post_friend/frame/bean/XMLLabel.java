@@ -17,12 +17,12 @@ import java.util.Objects;
 
 public class XMLLabel {
     private String labelName;
-    private String Value;
+    private String value;
     private Map<String, String> Attributes;
 
     public XMLLabel(String labelName, String value, Map<String, String> attributes) {
         this.labelName = labelName;
-        Value = value;
+        this.value = value;
         Attributes = attributes;
     }
 
@@ -38,11 +38,11 @@ public class XMLLabel {
     }
 
     public String getValue() {
-        return Value;
+        return value;
     }
 
     public void setValue(String value) {
-        Value = value;
+        this.value = value;
     }
 
     public Map<String, String> getAttributes() {
@@ -58,19 +58,19 @@ public class XMLLabel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         XMLLabel xmlLabel = (XMLLabel) o;
-        return Objects.equals(labelName, xmlLabel.labelName) && Objects.equals(Value, xmlLabel.Value) && Objects.equals(Attributes, xmlLabel.Attributes);
+        return Objects.equals(labelName, xmlLabel.labelName) && Objects.equals(value, xmlLabel.value) && Objects.equals(Attributes, xmlLabel.Attributes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(labelName, Value, Attributes);
+        return Objects.hash(labelName, value, Attributes);
     }
 
     @Override
     public String toString() {
         return "XMLLabel{" +
                 "labelName='" + labelName + '\'' +
-                ", Value='" + Value + '\'' +
+                ", value='" + value + '\'' +
                 ", Attributes=" + Attributes +
                 '}';
     }

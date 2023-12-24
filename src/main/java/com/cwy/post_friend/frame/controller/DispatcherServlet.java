@@ -37,9 +37,9 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-//        获得map路径映射
+        // 获得map路径映射
         RequestMap requestMap = RequestMap.newInstance();
-//        注册路径映射
+        // 注册路径映射
         registerMap(requestMap);
     }
 
@@ -81,7 +81,7 @@ public class DispatcherServlet extends HttpServlet {
                                 RequestParam requestParamAnnotation = parameters[i].getAnnotation(RequestParam.class);
                                 if (requestParamAnnotation != null) {
                                     String paramName = requestParamAnnotation.value();
-                                    paramClassNameMap.put(paramName,i);
+                                    paramClassNameMap.put(paramName, i);
                                 }
                             }
                         }

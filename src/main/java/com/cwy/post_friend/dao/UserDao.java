@@ -1,5 +1,6 @@
 package com.cwy.post_friend.dao;
 
+import com.cwy.post_friend.bean.User;
 import com.cwy.post_friend.frame.annotation.ordinary.Dao;
 
 /**
@@ -11,7 +12,13 @@ import com.cwy.post_friend.frame.annotation.ordinary.Dao;
  * @Since 1.0.0
  */
 
-//@Dao
+@Dao
 public interface UserDao {
-    int insertUser();
+    int insertUser(User user);
+
+    int deleteUserByID(int id);
+
+    int update(int id, User user);
+
+    User selectByID(int id);
 }

@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <dao>
     <insert id="insertUser">
-        INSERT INTO post_friend VALUES(15, '陈伟耀')
+        INSERT INTO test VALUES(?, ?)
     </insert>
+    <delete id="deleteUserByID">
+        DELETE FROM test WHERE id = ?
+    </delete>
+    <select id="selectByID">
+        SELECT * FROM test WHERE id = ?
+    </select>
+    <update id="update">
+        UPDATE test SET id = ? WHERE id = ?
+    </update>
 </dao>

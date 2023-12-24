@@ -1,5 +1,7 @@
 package com.cwy.post_friend.frame.proxy;
 
+import com.cwy.post_friend.frame.bean.XMLObject;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -17,14 +19,18 @@ import java.util.Map;
  */
 public class DaoProxy implements InvocationHandler {
     private Object object;
-    private final Map<String, String> idAndSQLField = new HashMap<>();
+    private XMLObject xmlObject;
 
-    public DaoProxy(Object object) {
+
+    public DaoProxy(Object object, XMLObject xmlObject) {
         this.object = object;
+        this.xmlObject = xmlObject;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        String name = method.getName();
+        System.out.println("name = " + name);
         return null;
     }
 }
