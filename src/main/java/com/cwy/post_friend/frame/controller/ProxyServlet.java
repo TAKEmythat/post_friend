@@ -11,6 +11,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 
 import java.io.File;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -57,7 +59,11 @@ public class ProxyServlet extends HttpServlet {
             for (Class<?> clazz : classList) {
                 // 如果是接口，则生成代理类
                 if (clazz.isInterface()) {
-                    Proxy.newProxyInstance(null, null,)
+                    // 如果是 Dao
+                    if (clazz.getDeclaredAnnotation(Dao.class) != null) {
+                        Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+                                clazz.getInterfaces(), );
+                    }
                 }
             }
         }
