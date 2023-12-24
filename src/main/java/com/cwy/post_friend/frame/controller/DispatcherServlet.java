@@ -4,6 +4,7 @@ import com.cwy.post_friend.frame.annotation.request.RequestMapping;
 import com.cwy.post_friend.frame.annotation.request.RequestParam;
 import com.cwy.post_friend.frame.bean.ControllerChain;
 import com.cwy.post_friend.frame.bean.Handler;
+import com.cwy.post_friend.frame.enum_.RequestMode;
 import com.cwy.post_friend.frame.factory.RequestMap;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
@@ -64,10 +66,12 @@ public class DispatcherServlet extends HttpServlet {
                 for (Method declaredMethod : declaredMethods) {
                     RequestMapping requestMappingAnnotation = declaredMethod.getAnnotation(RequestMapping.class);
                     if (requestMappingAnnotation != null) {
+//                      拼接请求路径
                         String url_part2 = requestMappingAnnotation.value();
                         String url = url_part1 + url_part2;
 
-                        Handler handler = new Handler(obj, declaredMethod);
+                        RequestMode mode = requestMappingAnnotation.mode();
+                        Handler handler = new Handler(obj, declaredMethod,mode);
 //                        用于参数和位置的map
                         Map<String, Integer> paramClassNameMap = handler.getParamClassNameMap();
 
@@ -109,10 +113,61 @@ public class DispatcherServlet extends HttpServlet {
         Handler handler = urlMapping.get(path);
         if (handler == null) {
 //            没有匹配的处理器
-            response.getWriter().write("404 not found");
+            response.getWriter().write("404 Not Found");
+            return;
+        }
+
+//      检测请求方法
+        String method = request.getMethod();
+        RequestMode requestMode = handler.getRequestMode();
+        if (!requestMode.name().equals(method)){
+            response.getWriter().write("405 Method Not Allowed");
             return;
         }
 
 
+        Map<String, String[]> siteParameterMap = request.getParameterMap();
+
+
+        Map<String, Integer> paramClassNameMap = handler.getParamClassNameMap();
+        Object[] paramObjects = new Object[paramClassNameMap.size()];
+        for (Object paramObject : paramObjects) {
+            paramObject = null;
+        }
+
+//        准备参数
+        siteParameterMap.forEach(new BiConsumer<String, String[]>() {
+            @Override
+            public void accept(String key ,String[] strings) {
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String s : strings) {
+                    stringBuffer.append(s);
+                    stringBuffer.append(",");
+                }
+                String value = stringBuffer.substring(0, stringBuffer.length() - 1);
+                if (!paramClassNameMap.containsKey(key)){
+                    return;
+                }
+                paramObjects[paramClassNameMap.get(key)] = value;
+            }
+        });
+
+//      插入请求和响应
+        if (paramClassNameMap.containsKey(HttpServletRequest.class.getSimpleName())) {
+            paramObjects[paramClassNameMap.get(HttpServletRequest.class.getSimpleName())] = request;
+        }
+
+        if (paramClassNameMap.containsKey(HttpServletResponse.class.getSimpleName())) {
+            paramObjects[paramClassNameMap.get(HttpServletResponse.class.getSimpleName())] = response;
+        }
+
+
+        try {
+            Object invoke = handler.invoke(paramObjects);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
