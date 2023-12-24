@@ -15,7 +15,12 @@ import java.util.Map;
  */
 
 public class RequestMap {
+    private static final RequestMap requestMap = new RequestMap();
     private static final Map<String, Object> requestMapping = new HashMap<>();
+
+    public RequestMap newInstance() {
+        return requestMap;
+    }
 
     public static void insertRequestMapping(String url, Object controller) {
         requestMapping.put(url, controller);
