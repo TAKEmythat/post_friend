@@ -27,8 +27,12 @@ public class UserController extends DispatcherServlet {
 
     @Response()
     @RequestMapping(value = "/index")
-    public String index(HttpServletRequest request, HttpServletResponse response,@RequestParam("name") String name) {
-        userService.register();
+    public String index(HttpServletRequest request,HttpServletResponse response,@RequestParam("name") String name) {
+        System.out.println(request);
+        System.out.println(response);
+        System.out.println("name = " + name);
         return "a";
     }
+
+
 }

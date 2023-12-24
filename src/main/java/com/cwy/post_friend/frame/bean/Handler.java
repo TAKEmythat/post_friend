@@ -1,5 +1,8 @@
 package com.cwy.post_friend.frame.bean;
 
+import com.cwy.post_friend.frame.enum_.RequestMode;
+
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -17,12 +20,27 @@ public class Handler {
     private Object target;
     private Method method;
 
+    private RequestMode requestMode;
+
     private Map<String,Integer> paramClassNameMap;
 
-    public Handler(Object target, Method method) {
+    public Handler(Object target, Method method,RequestMode requestMode) {
         this.target = target;
         this.method = method;
+        this.requestMode = requestMode;
         this.paramClassNameMap = new HashMap<>();
+    }
+
+    public RequestMode getRequestMode() {
+        return requestMode;
+    }
+
+    public void setRequestMode(RequestMode requestMode) {
+        this.requestMode = requestMode;
+    }
+
+    public Object invoke(Object[] param) throws InvocationTargetException, IllegalAccessException {
+        return method.invoke(target, param);
     }
 
 
