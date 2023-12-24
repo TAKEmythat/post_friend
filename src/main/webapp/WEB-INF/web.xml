@@ -3,6 +3,18 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
+
+    <!-- 创建代理对象的 Servlet -->
+    <servlet>
+        <servlet-name>proxyServlet</servlet-name>
+        <servlet-class>com.cwy.post_friend.frame.controller.ProxyServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>proxyServlet</servlet-name>
+        <url-pattern>/proxyServlet//////////proxyServlet</url-pattern>
+    </servlet-mapping>
+
     <!-- 核心 Servlet -->
     <servlet>
         <servlet-name>coreServlet</servlet-name>
@@ -14,14 +26,14 @@
         <url-pattern>/coreServlet//////////coreServlet</url-pattern>
     </servlet-mapping>
 
-    <!-- 创建代理对象的 Servlet -->
+    <!-- 分派器 Servlet -->
     <servlet>
-        <servlet-name>proxyServlet</servlet-name>
-        <servlet-class>com.cwy.post_friend.frame.controller.ProxyServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <servlet-class>com.cwy.post_friend.frame.controller.DispatcherServlet</servlet-class>
+        <load-on-startup>3</load-on-startup>
     </servlet>
     <servlet-mapping>
-        <servlet-name>proxyServlet</servlet-name>
-        <url-pattern>/proxyServlet//////////proxyServlet</url-pattern>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <url-pattern>/*</url-pattern>
     </servlet-mapping>
 </web-app>
