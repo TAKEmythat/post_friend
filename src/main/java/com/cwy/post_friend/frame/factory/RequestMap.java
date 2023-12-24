@@ -18,7 +18,7 @@ public class RequestMap {
     private static final RequestMap requestMap = new RequestMap();
     private static final Map<String, Object> requestMapping = new HashMap<>();
 
-    public RequestMap newInstance() {
+    public static RequestMap newInstance() {
         return requestMap;
     }
 
