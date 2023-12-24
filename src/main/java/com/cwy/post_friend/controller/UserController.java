@@ -28,6 +28,7 @@ public class UserController extends DispatcherServlet {
     @Response()
     @RequestMapping(value = "/index")
     public String index(HttpServletRequest request,HttpServletResponse response,@RequestParam("name") String name) {
+//        方法传参除了req和resp以外，需要写requestParam来获得request.getParameterMap的内容，不写则会报错
         System.out.println(request);
         System.out.println(response);
         System.out.println("name = " + name);
