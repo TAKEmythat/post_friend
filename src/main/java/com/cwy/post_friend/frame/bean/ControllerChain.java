@@ -14,7 +14,9 @@ import java.util.Objects;
  */
 
 public class ControllerChain {
+    // 控制器对象，即类上有 @Controller 注解的类
     private Object controller;
+    // 控制器对象所要匹配的请求方式，例如：GET，POST，PUT....
     private RequestMode requestMode;
 
     public ControllerChain(Object controller, RequestMode requestMode) {

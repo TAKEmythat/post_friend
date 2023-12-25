@@ -16,12 +16,13 @@ import com.cwy.post_friend.service.UserService;
 
 @Service
 public class UserServiceImpl implements UserService {
-    @RealBean("UserDaoImpl")
+    @RealBean("UserDao")
     private UserDao userDao;
 
     @Override
     public void register() {
         System.out.println("正在注册用户");
         int i = userDao.deleteUserByID(1);
+        System.out.println("i = " + i);
     }
 }

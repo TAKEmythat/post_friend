@@ -31,6 +31,14 @@
         <servlet-name>dispatcherServlet</servlet-name>
         <servlet-class>com.cwy.post_friend.frame.controller.DispatcherServlet</servlet-class>
         <load-on-startup>3</load-on-startup>
+        <init-param>
+            <param-name>prefix</param-name>
+            <param-value>page</param-value>
+        </init-param>
+        <init-param>
+            <param-name>suffix</param-name>
+            <param-value>.jsp</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>dispatcherServlet</servlet-name>

@@ -13,7 +13,10 @@ import java.util.Objects;
  */
 
 public class XMLObject {
+    // XML 文件的文件名，例如：a.xml，这里的文件名为 [a.xml]
     private String xmlName;
+    // XML 文件中的标签数组，例如：a.xml 中有 {<h1></h1>, <h2></h2>}
+    // 则这里的数组为：[xmlLabels.h1, xmlLabels.h2]
     private List<XMLLabel> xmlLabels;
 
     public XMLObject(String xmlName, List<XMLLabel> xmlLabels) {

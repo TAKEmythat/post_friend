@@ -82,7 +82,8 @@ public class ProxyServlet extends HttpServlet {
                     DaoProxy daoProxy = new DaoProxy(clazz0, xmlObject);
                     Object o = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                             clazz0.getInterfaces(), daoProxy);
-                    beanFactory.insertOrdinaryBeans(clazzName.substring(clazzName.lastIndexOf(".") + 1), o);
+                    beanFactory.insertOrdinaryBeans(clazzName.substring(clazzName.lastIndexOf(".") + 1),
+                            clazz.cast(o));
                 }
             }
         }
