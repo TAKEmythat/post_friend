@@ -1,20 +1,23 @@
 package com.cwy.post_friend.frame.controller;
 
+import com.alibaba.fastjson2.JSON;
 import com.cwy.post_friend.frame.annotation.reponse.Response;
+import com.cwy.post_friend.frame.annotation.request.RequestBody;
 import com.cwy.post_friend.frame.annotation.request.RequestMapping;
 import com.cwy.post_friend.frame.annotation.request.RequestParam;
 import com.cwy.post_friend.frame.bean.ControllerChain;
 import com.cwy.post_friend.frame.bean.Handler;
 import com.cwy.post_friend.frame.enum_.RequestMode;
-import com.cwy.post_friend.frame.factory.BeanFactory;
 import com.cwy.post_friend.frame.factory.RequestMap;
 import com.cwy.post_friend.frame.view.InternalResourceViewResolver;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -54,6 +57,8 @@ public class DispatcherServlet extends HttpServlet {
         String prefix = getServletConfig().getInitParameter("prefix");
         String suffix = getServletConfig().getInitParameter("suffix");
         internalResourceViewResolver = new InternalResourceViewResolver(prefix, suffix);
+
+
     }
 
     /**
@@ -82,8 +87,6 @@ public class DispatcherServlet extends HttpServlet {
                         String url = url_part1 + url_part2;
 
                         RequestMode mode = requestMappingAnnotation.mode();
-
-
                         Handler handler = new Handler(obj, declaredMethod, mode);
 //                        用于参数和位置的map
                         Map<String, Integer> paramClassNameMap = handler.getParamClassNameMap();
@@ -94,13 +97,21 @@ public class DispatcherServlet extends HttpServlet {
                             if (parameters[i].getType() == HttpServletRequest.class ||
                                     parameters[i].getType() == HttpServletResponse.class) {
                                 paramClassNameMap.put(parameters[i].getType().getSimpleName(), i);
+                                continue;
                             } else {
                                 RequestParam requestParamAnnotation = parameters[i].getAnnotation(RequestParam.class);
                                 if (requestParamAnnotation != null) {
                                     String paramName = requestParamAnnotation.value();
                                     paramClassNameMap.put(paramName, i);
+                                    continue;
+                                }
+
+                                RequestBody requestBodyAnnotation = parameters[i].getAnnotation(RequestBody.class);
+                                if (requestBodyAnnotation != null) {
+                                    paramClassNameMap.put(RequestBody.class.getSimpleName(), i);
                                 }
                             }
+
                         }
 
                         paramClassNameMap.forEach(new BiConsumer<String, Integer>() {
@@ -175,6 +186,25 @@ public class DispatcherServlet extends HttpServlet {
         }
         if (paramClassNameMap.containsKey(HttpServletResponse.class.getSimpleName())) {
             paramObjects[paramClassNameMap.get(HttpServletResponse.class.getSimpleName())] = response;
+        }
+
+//        封装请求体
+
+        if (paramClassNameMap.containsKey(RequestBody.class.getSimpleName())){
+            int requestBodyIndex = paramClassNameMap.get(RequestBody.class.getSimpleName());
+            Parameter parameter = handler.getMethod().getParameters()[requestBodyIndex];
+            Class<?> paramType = parameter.getType();
+
+//            获得请求体参数
+            BufferedReader reader = request.getReader();
+
+            StringBuffer json = new StringBuffer();
+            String temp;
+            while ((temp = reader.readLine())!=null){
+                json.append(temp);
+            }
+            Object obj = JSON.parseObject(json.toString(), paramType);
+            paramObjects[requestBodyIndex] = obj;
         }
 
 
