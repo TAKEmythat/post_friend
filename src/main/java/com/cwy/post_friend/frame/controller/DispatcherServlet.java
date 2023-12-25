@@ -6,6 +6,7 @@ import com.cwy.post_friend.frame.annotation.request.RequestParam;
 import com.cwy.post_friend.frame.bean.ControllerChain;
 import com.cwy.post_friend.frame.bean.Handler;
 import com.cwy.post_friend.frame.enum_.RequestMode;
+import com.cwy.post_friend.frame.factory.BeanFactory;
 import com.cwy.post_friend.frame.factory.RequestMap;
 import com.cwy.post_friend.frame.view.InternalResourceViewResolver;
 import jakarta.servlet.ServletException;
@@ -52,9 +53,7 @@ public class DispatcherServlet extends HttpServlet {
         // 视图解析器
         String prefix = getServletConfig().getInitParameter("prefix");
         String suffix = getServletConfig().getInitParameter("suffix");
-        internalResourceViewResolver = new InternalResourceViewResolver(prefix,suffix);
-
-
+        internalResourceViewResolver = new InternalResourceViewResolver(prefix, suffix);
     }
 
     /**
@@ -83,6 +82,8 @@ public class DispatcherServlet extends HttpServlet {
                         String url = url_part1 + url_part2;
 
                         RequestMode mode = requestMappingAnnotation.mode();
+
+
                         Handler handler = new Handler(obj, declaredMethod, mode);
 //                        用于参数和位置的map
                         Map<String, Integer> paramClassNameMap = handler.getParamClassNameMap();
@@ -178,15 +179,15 @@ public class DispatcherServlet extends HttpServlet {
 
 
         try {
-            String result = (String)handler.invoke(paramObjects);
+            String result = (String) handler.invoke(paramObjects);
             Response annotation = handler.getMethod().getAnnotation(Response.class);
-            if (annotation!=null){
+            if (annotation != null) {
                 PrintWriter out = response.getWriter();
                 out.print(result);
                 out.flush();
                 return;
             }
-            internalResourceViewResolver.render(result,request,response);
+            internalResourceViewResolver.render(result, request, response);
             return;
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e);
