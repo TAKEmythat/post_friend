@@ -12,13 +12,13 @@ import com.cwy.post_friend.frame.annotation.ordinary.Dao;
  * @Since 1.0.0
  */
 
-
+@Dao
 public interface UserDao {
-    int insertUser(User user);
+    Integer insertUser(User user);
 
-    int deleteUserByID(int id);
+    Integer deleteUserByID(int id);
 
-    int update(int id, User user);
+    Integer update(int id, User user);
 
     User selectByID(int id);
 }

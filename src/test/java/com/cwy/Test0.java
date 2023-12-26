@@ -1,6 +1,7 @@
 package com.cwy;
 
 import com.cwy.post_friend.frame.bean.XMLObject;
+import com.cwy.post_friend.frame.tool.DynamicallyGenerateImplementationClasses;
 import com.cwy.post_friend.frame.tool.XMLAnalysis;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
@@ -27,7 +28,18 @@ public class Test0 {
      */
     @Test
     public void test0_0() throws URISyntaxException, ParserConfigurationException, IOException, SAXException {
-        XMLObject xmlObject = XMLAnalysis.getXmlObject("com/cwy/post_friend/dao/impl/UserDaoImpl.xml");
+        XMLObject xmlObject = XMLAnalysis.getXmlObject("com/cwy/post_friend/dao/impl/UserDao.xml");
         System.out.println("xmlObject = " + xmlObject);
+    }
+
+    /**
+     * 测试是否可以动态生成接口的实现类
+     */
+    @Test
+    public void Test0_1() throws URISyntaxException, IOException, ClassNotFoundException, InterruptedException {
+        Class<?> aClass =
+                DynamicallyGenerateImplementationClasses.
+                        generateImplementationClass("com.cwy.post_friend.dao.UserDao");
+        System.out.println("aClass = " + aClass);
     }
 }

@@ -16,8 +16,11 @@ import java.util.Objects;
  */
 
 public class XMLLabel {
+    // 标签的名字，例如：<h1></h1>，这里的标签名为：[h1]
     private String labelName;
+    // 标签中的值，例如：<h1>你好</h1>，这里的标签值为：[你好]
     private String value;
+    // 标签内部的属性名与属性值，例如：<h1 id="a"></h1>，这里的属性名与属性值就是 [id : a]
     private Map<String, String> Attributes;
 
     public XMLLabel(String labelName, String value, Map<String, String> attributes) {
