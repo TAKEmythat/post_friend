@@ -19,7 +19,6 @@ import jakarta.servlet.http.HttpServlet;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -134,9 +133,11 @@ public class CoreServlet extends HttpServlet {
      */
     public void injection() throws IllegalAccessException {
         Map<String, Object> ordinaryBeans = beanFactory.getOrdinaryBeans();
-        Set<Map.Entry<String, Object>> entries = ordinaryBeans.entrySet();
+        Set<Map.Entry<String, Object>> beanFactoryEntry = ordinaryBeans.entrySet();
+        Map<String, Object> requestMapping = requestMap.getRequestMapping();
+        Set<Map.Entry<String, Object>> requestMapEntry = requestMapping.entrySet();
         // 循环遍历普通 Bean
-        for (Map.Entry<String, Object> entry : entries) {
+        for (Map.Entry<String, Object> entry : beanFactoryEntry) {
             Object value = entry.getValue();
             Class<?> clazz = value.getClass();
             Field[] declaredFields = clazz.getDeclaredFields();
@@ -149,6 +150,24 @@ public class CoreServlet extends HttpServlet {
                     String realBeanName = realBeanAnnotation.value();
                     Object bean = beanFactory.getBean(realBeanName);
                     field.set(value, bean);
+                }
+            }
+        }
+        // 循环遍历 Request 的 Controller 进行注入
+        for (Map.Entry<String, Object> entry : requestMapEntry) {
+            String url = entry.getKey();
+            Object controller = entry.getValue();
+            Class<?> controllerClass = controller.getClass();
+            Field[] declaredFields = controllerClass.getDeclaredFields();
+            // 循环遍历字段，为对象的属性赋值
+            for (Field field : declaredFields) {
+                RealBean realBeanAnnotation = field.getDeclaredAnnotation(RealBean.class);
+                if (realBeanAnnotation != null) {
+                    field.setAccessible(true);
+                    String value = realBeanAnnotation.value();
+                    Object bean = beanFactory.getBean(value);
+                    field.set(controller, bean);
+                    requestMap.insertRequestMapping(url, controller);
                 }
             }
         }
