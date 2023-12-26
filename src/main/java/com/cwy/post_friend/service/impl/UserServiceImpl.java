@@ -14,7 +14,7 @@ import com.cwy.post_friend.service.UserService;
  * @Since 1.0.0
  */
 
-@Service
+//@Service
 public class UserServiceImpl implements UserService {
     @RealBean("UserDao")
     private UserDao userDao;
