@@ -3,6 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
+    <!--  静态资源  -->
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>*.js</url-pattern>
+        <url-pattern>*.css</url-pattern>
+    </servlet-mapping>
+
 
     <!-- 创建代理对象的 Servlet -->
     <servlet>
@@ -25,15 +32,22 @@
         <servlet-name>coreServlet</servlet-name>
         <url-pattern>/coreServlet//////////coreServlet</url-pattern>
     </servlet-mapping>
-
     <!-- 分派器 Servlet -->
     <servlet>
         <servlet-name>dispatcherServlet</servlet-name>
         <servlet-class>com.cwy.post_friend.frame.controller.DispatcherServlet</servlet-class>
-        <load-on-startup>3</load-on-startup>
+        <init-param>
+            <param-name>prefix</param-name>
+            <param-value></param-value>
+        </init-param>
+        <init-param>
+            <param-name>suffix</param-name>
+            <param-value>.jsp</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>dispatcherServlet</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
+
 </web-app>

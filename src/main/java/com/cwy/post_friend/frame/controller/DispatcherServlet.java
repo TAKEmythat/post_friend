@@ -134,6 +134,12 @@ public class DispatcherServlet extends HttpServlet {
 //        path = /3324
         String path = request.getPathInfo();
 
+//       静态资源转发
+        int i = path.lastIndexOf(".jsp");
+        if (i != -1){
+            request.getRequestDispatcher("default").forward(request,response);
+        }
+
         Handler handler = urlMapping.get(path);
         if (handler == null) {
 //            没有匹配的处理器
