@@ -28,7 +28,7 @@ public class UserController extends DispatcherServlet {
     @RealBean("UserServiceImpl")
     private UserService userService;
 
-    @Response()
+
     @RequestMapping(value = "/index",mode = RequestMode.POST)
     public String index(HttpServletRequest request, HttpServletResponse response, @RequestBody User user, @RequestParam("name") String name) {
 //        方法传参除了req和resp以外，需要写requestParam来获得request.getParameterMap的内容，不写则会报错
@@ -36,7 +36,10 @@ public class UserController extends DispatcherServlet {
         System.out.println(response);
         System.out.println("name = " + name);
         System.out.println("user = " + user);
-        userService.register();
-        return "a";
+        request.setAttribute("user",user);
+        System.out.println(userService);
+        return "index";
     }
+
+
 }

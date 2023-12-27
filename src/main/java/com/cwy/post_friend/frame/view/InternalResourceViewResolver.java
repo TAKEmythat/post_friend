@@ -27,7 +27,7 @@ public class InternalResourceViewResolver {
     }
 
     public void render(String where, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RequestDispatcher requestDispatcher = request.getRequestDispatcher(prefix + where + suffix);
+        RequestDispatcher requestDispatcher = request.getRequestDispatcher("/"+prefix +"/"+ where + suffix);
         requestDispatcher.forward(request,response);
     }
 

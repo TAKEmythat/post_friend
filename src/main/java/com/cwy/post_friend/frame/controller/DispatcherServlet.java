@@ -41,10 +41,15 @@ import java.util.function.BiConsumer;
 public class DispatcherServlet extends HttpServlet {
     private final HashMap<String, Handler> urlMapping = new HashMap<>();
 
+    private int contextPathLength = 0;
+
     private InternalResourceViewResolver internalResourceViewResolver = null;
 
     @Override
     public void init() throws ServletException {
+        //计算context长度
+        contextPathLength = getServletContext().getContextPath().length();
+
         // 获得map路径映射
         RequestMap requestMap = RequestMap.newInstance();
         // 注册路径映射
@@ -128,10 +133,13 @@ public class DispatcherServlet extends HttpServlet {
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // 请求的路径
         // http://localhost:8080/post_friend_war_exploded/3324?name=hmj
-        // path = /3324
-        String path = request.getPathInfo();
+        // requestURI = /post_friend_war_exploded /3324
+        //  request.getRequestURI();
 
-        Handler handler = urlMapping.get(path);
+
+        String requestURI = request.getRequestURI().substring(contextPathLength);
+
+        Handler handler = urlMapping.get(requestURI);
         if (handler == null) {
             // 没有匹配的处理器
             response.getWriter().write("404 Not Found");
