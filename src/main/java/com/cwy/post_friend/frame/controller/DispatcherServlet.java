@@ -1,6 +1,7 @@
 package com.cwy.post_friend.frame.controller;
 
 import com.alibaba.fastjson2.JSON;
+import com.cwy.post_friend.dao.UserDao;
 import com.cwy.post_friend.frame.annotation.reponse.Response;
 import com.cwy.post_friend.frame.annotation.request.RequestBody;
 import com.cwy.post_friend.frame.annotation.request.RequestMapping;
@@ -8,6 +9,7 @@ import com.cwy.post_friend.frame.annotation.request.RequestParam;
 import com.cwy.post_friend.frame.bean.ControllerChain;
 import com.cwy.post_friend.frame.bean.Handler;
 import com.cwy.post_friend.frame.enum_.RequestMode;
+import com.cwy.post_friend.frame.factory.BeanFactory;
 import com.cwy.post_friend.frame.factory.RequestMap;
 import com.cwy.post_friend.frame.view.InternalResourceViewResolver;
 import jakarta.servlet.ServletException;
@@ -59,8 +61,6 @@ public class DispatcherServlet extends HttpServlet {
         String prefix = getServletConfig().getInitParameter("prefix");
         String suffix = getServletConfig().getInitParameter("suffix");
         internalResourceViewResolver = new InternalResourceViewResolver(prefix, suffix);
-        Map<String, Object> requestMapping = requestMap.getRequestMapping();
-        System.out.println("requestMapping = " + requestMapping);
     }
 
     /**
