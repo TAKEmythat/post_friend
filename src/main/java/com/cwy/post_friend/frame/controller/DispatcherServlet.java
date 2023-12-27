@@ -8,7 +8,6 @@ import com.cwy.post_friend.frame.annotation.request.RequestParam;
 import com.cwy.post_friend.frame.bean.ControllerChain;
 import com.cwy.post_friend.frame.bean.Handler;
 import com.cwy.post_friend.frame.enum_.RequestMode;
-import com.cwy.post_friend.frame.factory.BeanFactory;
 import com.cwy.post_friend.frame.factory.RequestMap;
 import com.cwy.post_friend.frame.view.InternalResourceViewResolver;
 import jakarta.servlet.ServletException;
@@ -55,6 +54,8 @@ public class DispatcherServlet extends HttpServlet {
         String prefix = getServletConfig().getInitParameter("prefix");
         String suffix = getServletConfig().getInitParameter("suffix");
         internalResourceViewResolver = new InternalResourceViewResolver(prefix, suffix);
+        Map<String, Object> requestMapping = requestMap.getRequestMapping();
+        System.out.println("requestMapping = " + requestMapping);
     }
 
     /**

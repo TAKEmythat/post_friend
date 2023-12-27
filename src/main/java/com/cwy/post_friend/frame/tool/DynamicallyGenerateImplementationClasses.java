@@ -1,14 +1,13 @@
 package com.cwy.post_friend.frame.tool;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
-import java.io.*;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.net.URI;
+import com.cwy.post_friend.frame.bean.JavaFileObject;
+import com.cwy.post_friend.frame.bean.XMLObject;
+import com.cwy.post_friend.frame.proxy.DaoProxy;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 /**
  * 动态生成接口实现类的工具类
@@ -25,100 +24,67 @@ public class DynamicallyGenerateImplementationClasses {
     private DynamicallyGenerateImplementationClasses() {
     }
 
-    /**
-     * 生成 className 的实现类
-     *
-     * @param className 格式：`com.xxx.*`
-     * @return 返回生成后的类名
-     * @throws URISyntaxException     找不到资源错误
-     * @throws IOException            资源连接错误
-     * @throws ClassNotFoundException 找不到类错误
-     */
-    public static Class<?> generateImplementationClass(String className) throws URISyntaxException, IOException, ClassNotFoundException, InterruptedException {
-        className = className.replace(".", "/") + ".class";
-        URL resource = Thread.currentThread().getContextClassLoader().getResource(className);
-        assert resource != null;
-        URI uri = resource.toURI();
-        File classfile = new File(uri);
-        String path = classfile.getParent();
-        String generateFileName =
-                path + "\\" + classfile.getName().substring(0, classfile.getName().lastIndexOf(".")) +
-                        "Impl$.java";
-        File file = new File(generateFileName);
-        // 生成源文件
-        if (!file.exists()) {
-            boolean newFile = file.createNewFile();
-        }
-        String achieveClassName = writeClassIntoJavaFile(className.replace("/", ".").
-                substring(0, className.lastIndexOf(".")), generateFileName);
-        // 删除源文件
-        boolean delete = file.delete();
-        return Class.forName(achieveClassName);
+    public static JavaFileObject generateJavaFileObject(String className) throws URISyntaxException {
+        return new JavaFileObject(className, "");
     }
 
     /**
-     * 将指定的接口类文件内容写入 Java 文件中，并实现类加载
+     * 生成类文件的代理类文件
+     * 1. 生成 JavaFileObject 对象通过类文件
+     * 2. 创建目标接口类文件的代理类文件
+     * 3. 创建
      *
-     * @param className 全限定类名
-     * @param fileName  资源管理器文件全名
-     * @return 返回生成后的实现类的全限定类名
-     * @throws ClassNotFoundException 找不到类错误
-     * @throws IOException            资源连接错误
+     * @param className 目标类文件名
+     * @return
+     * @throws URISyntaxException     ...
+     * @throws IOException            ...
+     * @throws ClassNotFoundException ...
+     * @throws InterruptedException   ...
      */
-    public static String writeClassIntoJavaFile(String className, String fileName) throws ClassNotFoundException,
-            IOException, InterruptedException {
-        JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
-        StringBuilder classCode = new StringBuilder();
-        Class<?> clazz = Class.forName(className);
-        Method[] declaredMethods = clazz.getDeclaredMethods();
-        String packageName = "package " + clazz.getPackageName() + ";\n";
-        classCode.append(packageName);
-        String className0 = "public class " + fileName.substring(fileName.lastIndexOf("\\") + 1,
-                fileName.lastIndexOf(".")) + " implements " +
-                className.substring(className.lastIndexOf(".") + 1) + " {\n";
-        classCode.append(className0);
-        for (Method method : declaredMethods) {
-            StringBuilder methodAll = new StringBuilder();
-            int modifiers = method.getModifiers();
-            methodAll.append(Modifier.isPublic(modifiers) ? "public " : "");
-            Class<?> returnType = method.getReturnType();
-            String returnTypeName = returnType.getName();
-            methodAll.append(returnTypeName).append(" ");
-            String methodName = method.getName();
-            methodAll.append(methodName).append("(");
-            Parameter[] parameters = method.getParameters();
-            for (int i = 0; i < parameters.length; i++) {
-                StringBuilder methodParameters = new StringBuilder();
-                Class<?> parameterType = parameters[i].getType();
-                String parameterTypeName = parameterType.getTypeName();
-                methodParameters.append(parameterTypeName).append(" ");
-                String name = parameters[i].getName();
-                methodParameters.append(name);
-                if (i != parameters.length - 1) {
-                    methodParameters.append(", ");
-                }
-                methodAll.append(methodParameters);
-            }
-            String parameterEnd = ")";
-            methodAll.append(parameterEnd);
-            methodAll.append("{\nreturn null;\n}\n");
-            classCode.append(methodAll);
+    public static Class<?> generateImplementationClass(String className, String proxyMethod, XMLObject xmlObject) throws URISyntaxException,
+            IOException,
+            ClassNotFoundException, InterruptedException {
+        Class<?> clazz = null;
+        JavaFileObject generateJavaFile = null;
+        JavaFileObject javaFileObject = generateJavaFileObject(className);
+        String generateFileName =
+                javaFileObject.getCompleteFileName().substring(0,
+                        javaFileObject.getCompleteFileName().lastIndexOf("."))
+                        + "$Impl.java";
+        javaFileObject.setFile(new File(generateFileName));
+        // 创建源文件
+        javaFileObject.newFile();
+        // 在这一步使用我们自己原生写的代理工具类去创建我们的代理类
+        if (proxyMethod.equals("DAO")) {
+            javaFileObject.implementInterfaceClass(Class.forName(className));
+            DaoProxy daoProxy = new DaoProxy(javaFileObject, xmlObject);
+            generateJavaFile = daoProxy.generateJavaFileObjectByXMLObject();
+            clazz = compileJavaFile(generateJavaFile);
         }
-        String end = "\n}\n";
-        classCode.append(end);
-        File file = new File(fileName);
-        FileOutputStream fos = new FileOutputStream(file);
-        fos.write(classCode.toString().getBytes());
-        String cutting = className.replace(".", "\\").substring(0, className.lastIndexOf("."));
-        String classPath = fileName.substring(0, fileName.indexOf(cutting) - 1);
+        // 删除源文件
+        javaFileObject.deleteFile();
+        return clazz;
+    }
+
+    public static Class<?> compileJavaFile(JavaFileObject javaFileObject) throws ClassNotFoundException,
+            IOException, InterruptedException {
+        FileOutputStream fos = new FileOutputStream(javaFileObject.getFile());
+        fos.write(javaFileObject.getJavaCode().toString().getBytes());
+        String classPath = javaFileObject.getFile().getAbsolutePath().substring(0,
+                javaFileObject.getFile().getAbsolutePath().indexOf(javaFileObject.
+                        getClassPathClassName().replace(".", "\\")));
+        String fileName = javaFileObject.getFile().getAbsolutePath();
         Process exec1 = Runtime.getRuntime().exec("javac " + fileName,
                 new String[]{"CLASSPATH=" + classPath});
-        int run = javaCompiler.run(null, null, null, fileName);
-        String implementSubclassesName =
-                className.substring(0, className.lastIndexOf(".")) + "." +
-                        fileName.substring(fileName.lastIndexOf("\\") + 1
-                                , fileName.lastIndexOf("."));
+        exec1.waitFor();
         fos.close();
-        return implementSubclassesName;
+        String packageName = javaFileObject.getPackageName().replace(".", "\\");
+        String absolutePath =
+                javaFileObject.getFile().getAbsolutePath().
+                        substring(javaFileObject.getFile().
+                                getAbsolutePath().indexOf(packageName)).
+                replace("\\", ".");
+        absolutePath = absolutePath.substring(0, absolutePath.lastIndexOf("."));
+        return Class.forName(absolutePath);
     }
 }

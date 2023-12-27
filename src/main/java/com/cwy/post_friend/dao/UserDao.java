@@ -14,11 +14,11 @@ import com.cwy.post_friend.frame.annotation.ordinary.Dao;
 
 @Dao
 public interface UserDao {
-    Integer insertUser(User user);
+    Integer insertUser(Integer id, String name);
 
     Integer deleteUserByID(int id);
 
     Integer update(int id, User user);
 
-    User selectByID(int id);
+    Object selectByID(int id);
 }

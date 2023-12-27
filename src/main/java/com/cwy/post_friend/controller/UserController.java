@@ -36,8 +36,7 @@ public class UserController extends DispatcherServlet {
         System.out.println(response);
         System.out.println("name = " + name);
         System.out.println("user = " + user);
+        userService.register();
         return "a";
     }
-
-
 }

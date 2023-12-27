@@ -5,9 +5,9 @@ import com.cwy.post_friend.frame.annotation.ordinary.Component;
 import com.cwy.post_friend.frame.annotation.ordinary.Controller;
 import com.cwy.post_friend.frame.annotation.ordinary.Dao;
 import com.cwy.post_friend.frame.annotation.ordinary.Service;
+import com.cwy.post_friend.frame.bean.JavaFileObject;
 import com.cwy.post_friend.frame.bean.XMLObject;
 import com.cwy.post_friend.frame.factory.BeanFactory;
-import com.cwy.post_friend.frame.proxy.DaoProxy;
 import com.cwy.post_friend.frame.tool.DynamicallyGenerateImplementationClasses;
 import com.cwy.post_friend.frame.tool.ScanDirectoryHasAnnotation;
 import com.cwy.post_friend.frame.tool.XMLAnalysis;
@@ -18,9 +18,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -50,7 +47,7 @@ public class ProxyServlet extends HttpServlet {
             scanningProjectAllClassHasAnnotation();
         } catch (URISyntaxException | AnnotationException | ClassNotFoundException | ParserConfigurationException |
                  IOException | SAXException | InstantiationException | IllegalAccessException | InterruptedException e) {
-            throw new RuntimeException(e);
+                throw new RuntimeException(e);
         }
         super.init();
     }
@@ -78,12 +75,10 @@ public class ProxyServlet extends HttpServlet {
                 if (clazz.isInterface() && clazz.getDeclaredAnnotation(Dao.class) != null) {
                     String clazzName = clazz.getName();
                     XMLObject xmlObject = XMLAnalysis.getXmlObject(clazzName.replace(".", "\\") + ".xml");
-                    Class<?> clazz0 = DynamicallyGenerateImplementationClasses.generateImplementationClass(clazzName);
-                    DaoProxy daoProxy = new DaoProxy(clazz0, xmlObject);
-                    Object o = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                            clazz0.getInterfaces(), daoProxy);
+                    Class<?> clazz0 = DynamicallyGenerateImplementationClasses.
+                            generateImplementationClass(clazzName, "DAO", xmlObject);
                     beanFactory.insertOrdinaryBeans(clazzName.substring(clazzName.lastIndexOf(".") + 1),
-                            clazz.cast(o));
+                            clazz0.newInstance());
                 }
             }
         }

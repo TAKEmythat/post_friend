@@ -57,9 +57,8 @@ public class CoreServlet extends HttpServlet {
             // 输入注入后的对象
             Map<String, Object> ordinaryBeans = beanFactory.getOrdinaryBeans();
             logger.info("注入的对象：" + ordinaryBeans.toString());
-        } catch (AnnotationException | URISyntaxException | ClassNotFoundException |
-                 InstantiationException |
-                 IllegalAccessException e) {
+        } catch (AnnotationException | URISyntaxException | ClassNotFoundException | InstantiationException |
+                 IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
     }
@@ -117,10 +116,13 @@ public class CoreServlet extends HttpServlet {
                     List<Class<?>> controllerList = ScanDirectoryHasAnnotation.scanBeans(packageDir, RequestMapping.class);
                     // 循环添加 Controller 组件到 RequestMapping 中
                     for (Class<?> clazz0 : controllerList) {
+                        Object controller = clazz0.newInstance();
+                        Field[] clazz0DeclaredFields = clazz0.getDeclaredFields();
+                        // 再将 Controller 依赖注入到 ControllerChain 中
                         RequestMapping requestMappingAnnotation = clazz0.getDeclaredAnnotation(RequestMapping.class);
                         String value = requestMappingAnnotation.value();
                         RequestMode mode = requestMappingAnnotation.mode();
-                        ControllerChain controllerChain = new ControllerChain(clazz0.newInstance(), mode);
+                        ControllerChain controllerChain = new ControllerChain(controller, mode, clazz0.getSimpleName());
                         requestMap.insertRequestMapping(value, controllerChain);
                     }
                 }
@@ -131,7 +133,7 @@ public class CoreServlet extends HttpServlet {
     /**
      * 依赖注入 Bean
      */
-    public void injection() throws IllegalAccessException {
+    public void injection() throws IllegalAccessException, InstantiationException, NoSuchFieldException {
         Map<String, Object> ordinaryBeans = beanFactory.getOrdinaryBeans();
         Set<Map.Entry<String, Object>> beanFactoryEntry = ordinaryBeans.entrySet();
         Map<String, Object> requestMapping = requestMap.getRequestMapping();
@@ -140,9 +142,9 @@ public class CoreServlet extends HttpServlet {
         for (Map.Entry<String, Object> entry : beanFactoryEntry) {
             Object value = entry.getValue();
             Class<?> clazz = value.getClass();
-            Field[] declaredFields = clazz.getDeclaredFields();
+            Field[] clazzDeclaredFields = clazz.getDeclaredFields();
             // 循环遍历字段，并为对象的属性赋值，实现依赖注入
-            for (Field field : declaredFields) {
+            for (Field field : clazzDeclaredFields) {
                 RealBean realBeanAnnotation = field.getDeclaredAnnotation(RealBean.class);
                 if (realBeanAnnotation != null) {
                     // 设置可写权限
@@ -155,19 +157,38 @@ public class CoreServlet extends HttpServlet {
         }
         // 循环遍历 Request 的 Controller 进行注入
         for (Map.Entry<String, Object> entry : requestMapEntry) {
+            String controllerName = "";
             String url = entry.getKey();
-            Object controller = entry.getValue();
-            Class<?> controllerClass = controller.getClass();
-            Field[] declaredFields = controllerClass.getDeclaredFields();
-            // 循环遍历字段，为对象的属性赋值
-            for (Field field : declaredFields) {
+            Object controllerChain = entry.getValue();
+            Class<?> controllerChainClass = controllerChain.getClass();
+            Field controllerChainClassController = controllerChainClass.getDeclaredField("controller");
+            Field[] controllerChainClassDeclaredFields = controllerChainClass.getDeclaredFields();
+            // 循环遍历 ControllerChain 的字段，为对象的属性赋值
+            for (Field field : controllerChainClassDeclaredFields) {
+                if (field.getName().equals("controllerName")) {
+                    field.setAccessible(true);
+                    controllerName = (String) field.get(controllerChain);
+                    break;
+                }
+            }
+            Object realController = beanFactory.getBean(controllerName);
+            Field[] realControllerFields = realController.getClass().getDeclaredFields();
+            // 循环遍历 Controller 的字段，为对象的属性赋值
+            for (Field field : realControllerFields) {
                 RealBean realBeanAnnotation = field.getDeclaredAnnotation(RealBean.class);
                 if (realBeanAnnotation != null) {
                     field.setAccessible(true);
                     String value = realBeanAnnotation.value();
                     Object bean = beanFactory.getBean(value);
-                    field.set(controller, bean);
-                    requestMap.insertRequestMapping(url, controller);
+                    field.set(realController, bean);
+                }
+            }
+            for (Field field : controllerChainClassDeclaredFields) {
+                if (field.getName().equals("controllerName")) {
+                    controllerChainClassController.setAccessible(true);
+                    controllerChainClassController.set(controllerChain, realController);
+                    requestMap.insertRequestMapping(url, controllerChain);
+                    break;
                 }
             }
         }

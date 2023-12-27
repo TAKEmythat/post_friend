@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void register() {
         System.out.println("正在注册用户");
-        int i = userDao.deleteUserByID(1);
+        Object i = userDao.deleteUserByID(1);
         System.out.println("i = " + i);
     }
 }
