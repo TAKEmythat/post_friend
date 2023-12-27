@@ -110,11 +110,11 @@ public class CoreServlet extends HttpServlet {
                             Service.class, Controller.class);
                     // 循环添加普通 Bean 到 BeanFactory 中
                     for (Class<?> clazz0 : classList) {
-                        if (!clazz0.isInterface() && clazz0.getDeclaredAnnotation(AOPEnd.class) != null
-                                && clazz0.getDeclaredAnnotation(AOPStart.class) != null
-                                && clazz0.getDeclaredAnnotation(AOPCatch.class) != null
-                                && clazz0.getDeclaredAnnotation(Journal.class) != null
-                                && clazz0.getDeclaredAnnotation(Transaction.class) != null) {
+                        if ((!clazz0.isInterface()) && clazz0.getDeclaredAnnotation(AOPEnd.class) == null
+                                && clazz0.getDeclaredAnnotation(AOPStart.class) == null
+                                && clazz0.getDeclaredAnnotation(AOPCatch.class) == null
+                                && clazz0.getDeclaredAnnotation(Journal.class) == null
+                                && clazz0.getDeclaredAnnotation(Transaction.class) == null) {
                             beanFactory.insertOrdinaryBeans(clazz0.getSimpleName(), clazz0.newInstance());
                         }
                     }

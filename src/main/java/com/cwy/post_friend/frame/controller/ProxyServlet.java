@@ -62,7 +62,6 @@ public class ProxyServlet extends HttpServlet {
      */
     public void scanningProjectAllClassHasAnnotation() throws URISyntaxException,
             AnnotationException, ClassNotFoundException, ParserConfigurationException, IOException, SAXException, InstantiationException, IllegalAccessException, InterruptedException {
-        List<Class<?>> clazzList = new ArrayList<>();
         URL resource = Thread.currentThread().getContextClassLoader().getResource("");
         assert resource != null;
         URI uri = resource.toURI();
