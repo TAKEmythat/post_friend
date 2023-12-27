@@ -1,6 +1,6 @@
 package com.cwy.post_friend.frame.tool;
 
-import com.cwy.post_friend.exception.frame.AnnotationException;
+import com.cwy.post_friend.frame.exception.AnnotationException;
 
 import java.io.File;
 import java.lang.annotation.Annotation;

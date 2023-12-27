@@ -1,4 +1,4 @@
-package com.cwy.post_friend.exception.frame;
+package com.cwy.post_friend.frame.exception;
 
 /**
  * @Classname AnnotationException

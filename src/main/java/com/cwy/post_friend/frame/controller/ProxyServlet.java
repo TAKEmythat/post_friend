@@ -1,11 +1,11 @@
 package com.cwy.post_friend.frame.controller;
 
-import com.cwy.post_friend.exception.frame.AnnotationException;
+import com.cwy.post_friend.frame.exception.AnnotationException;
+import com.cwy.post_friend.frame.annotation.aop.*;
 import com.cwy.post_friend.frame.annotation.ordinary.Component;
 import com.cwy.post_friend.frame.annotation.ordinary.Controller;
 import com.cwy.post_friend.frame.annotation.ordinary.Dao;
 import com.cwy.post_friend.frame.annotation.ordinary.Service;
-import com.cwy.post_friend.frame.bean.JavaFileObject;
 import com.cwy.post_friend.frame.bean.XMLObject;
 import com.cwy.post_friend.frame.factory.BeanFactory;
 import com.cwy.post_friend.frame.tool.DynamicallyGenerateImplementationClasses;
@@ -18,6 +18,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -68,10 +69,10 @@ public class ProxyServlet extends HttpServlet {
         File dir = new File(uri);
         List<Class<?>> classList = ScanDirectoryHasAnnotation.scanBeans(dir, Component.class,
                 Controller.class, Dao.class, Service.class);
-        // 循环所有类，检查是否为接口
+        // 循环所有类
         if (classList.size() > 0) {
             for (Class<?> clazz : classList) {
-                // 如果是 Dao
+                // 检查是否为接口，并且还需要是 Dao
                 if (clazz.isInterface() && clazz.getDeclaredAnnotation(Dao.class) != null) {
                     String clazzName = clazz.getName();
                     XMLObject xmlObject = XMLAnalysis.getXmlObject(clazzName.replace(".", "\\") + ".xml");
@@ -80,6 +81,14 @@ public class ProxyServlet extends HttpServlet {
                     beanFactory.insertOrdinaryBeans(clazzName.substring(clazzName.lastIndexOf(".") + 1),
                             clazz0.newInstance());
                 }
+                // 如果函数上有 AOP 相关的注解的话，生成代理的 Service
+                //Method[] declaredMethods = clazz.getDeclaredMethods();
+                //if (clazz.getDeclaredAnnotation(AOPStart.class) != null ||
+                //        clazz.getDeclaredAnnotation(AOPEnd.class) != null ||
+                //clazz.getDeclaredAnnotation(AOPCatch.class) != null ||
+                //clazz.getDeclaredAnnotation(Journal.class) != null ||
+                //clazz.getDeclaredAnnotation(Transaction.class) != null) {
+                //}
             }
         }
     }

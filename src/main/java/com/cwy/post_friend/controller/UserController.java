@@ -3,7 +3,6 @@ package com.cwy.post_friend.controller;
 import com.cwy.post_friend.bean.User;
 import com.cwy.post_friend.frame.annotation.injection.RealBean;
 import com.cwy.post_friend.frame.annotation.ordinary.Controller;
-import com.cwy.post_friend.frame.annotation.reponse.Response;
 import com.cwy.post_friend.frame.annotation.request.RequestBody;
 import com.cwy.post_friend.frame.annotation.request.RequestMapping;
 import com.cwy.post_friend.frame.annotation.request.RequestParam;

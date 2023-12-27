@@ -1,6 +1,7 @@
 package com.cwy.post_friend.frame.controller;
 
-import com.cwy.post_friend.exception.frame.AnnotationException;
+import com.cwy.post_friend.frame.exception.AnnotationException;
+import com.cwy.post_friend.frame.annotation.aop.*;
 import com.cwy.post_friend.frame.annotation.config.Allocation;
 import com.cwy.post_friend.frame.annotation.config.ScanningPackage;
 import com.cwy.post_friend.frame.annotation.injection.RealBean;
@@ -109,7 +110,11 @@ public class CoreServlet extends HttpServlet {
                             Service.class, Controller.class);
                     // 循环添加普通 Bean 到 BeanFactory 中
                     for (Class<?> clazz0 : classList) {
-                        if (!clazz0.isInterface()) {
+                        if (!clazz0.isInterface() && clazz0.getDeclaredAnnotation(AOPEnd.class) != null
+                                && clazz0.getDeclaredAnnotation(AOPStart.class) != null
+                                && clazz0.getDeclaredAnnotation(AOPCatch.class) != null
+                                && clazz0.getDeclaredAnnotation(Journal.class) != null
+                                && clazz0.getDeclaredAnnotation(Transaction.class) != null) {
                             beanFactory.insertOrdinaryBeans(clazz0.getSimpleName(), clazz0.newInstance());
                         }
                     }

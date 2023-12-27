@@ -1,5 +1,8 @@
 package com.cwy.post_friend.frame.tool;
 
+import com.cwy.post_friend.frame.exception.RollbackTransactionException;
+import com.cwy.post_friend.frame.exception.SubmitTransactionException;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -30,9 +33,7 @@ public class JDBCUtil {
     public static Connection getConnection() throws SQLException {
         Connection connection = threadLocalConnections.get();
         if (connection == null) {
-            threadLocalConnections.set(
-                    JDBCUtil.getConnection("jdbc:mysql://localhost:3306/post_friend", "root",
-                    "123456c"));
+            threadLocalConnections.set(getDefaultConnection());
             connection = threadLocalConnections.get();
         }
         return connection;
@@ -40,5 +41,36 @@ public class JDBCUtil {
 
     public static Connection getConnection(String url, String username, String password) throws SQLException {
         return DriverManager.getConnection(url, username, password);
+    }
+
+    public void openTransaction() throws SQLException {
+        Connection connection = threadLocalConnections.get();
+        if (connection == null) {
+            threadLocalConnections.set(JDBCUtil.getDefaultConnection());
+            connection = threadLocalConnections.get();
+        }
+        connection.setAutoCommit(false);
+    }
+
+    public void submitTransaction() throws SubmitTransactionException, SQLException {
+        Connection connection = threadLocalConnections.get();
+        if (connection == null) {
+            throw new SubmitTransactionException("事务提交错误");
+        }
+        connection.commit();
+    }
+
+    public void rollbackTransaction() throws RollbackTransactionException, SQLException {
+        Connection connection = threadLocalConnections.get();
+        if (connection == null) {
+            throw new RollbackTransactionException("事务回滚错误");
+        }
+        connection.rollback();
+    }
+
+    private static Connection getDefaultConnection() throws SQLException {
+        return JDBCUtil.getConnection(
+                "jdbc:mysql://localhost:3306/post_friend", "root",
+                "123456c");
     }
 }
