@@ -148,6 +148,19 @@ public class CoreServlet extends HttpServlet {
             Object value = entry.getValue();
             Class<?> clazz = value.getClass();
             Field[] clazzDeclaredFields = clazz.getDeclaredFields();
+            Class<?> superclass = clazz.getSuperclass();
+            // 如果有父类，证明很大概率是代理类，需要获取这个类的字段，
+            // 然后通过字段给子类对象赋值，达到给子类对象赋值的目的
+            if (superclass != null) {
+                Field[] declaredFields = superclass.getDeclaredFields();
+                for (Field field : declaredFields) {
+                    RealBean realBeanAnnotation = field.getDeclaredAnnotation(RealBean.class);
+                    if (realBeanAnnotation != null) {
+                        field.setAccessible(true);
+                        field.set(value, beanFactory.getBean(realBeanAnnotation.value()));
+                    }
+                }
+            }
             // 循环遍历字段，并为对象的属性赋值，实现依赖注入
             for (Field field : clazzDeclaredFields) {
                 RealBean realBeanAnnotation = field.getDeclaredAnnotation(RealBean.class);

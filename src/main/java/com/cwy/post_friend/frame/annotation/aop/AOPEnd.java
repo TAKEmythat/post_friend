@@ -1,6 +1,7 @@
 package com.cwy.post_friend.frame.annotation.aop;
 
 import java.lang.annotation.*;
+import java.lang.reflect.Method;
 
 /**
  * @Classname AOPEnd
@@ -15,5 +16,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface AOPEnd {
-    String value() default "";
+    String value();
 }

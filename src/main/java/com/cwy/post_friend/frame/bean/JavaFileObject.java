@@ -10,10 +10,7 @@ import java.lang.reflect.Parameter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @Classname JavaFileObejct
@@ -29,16 +26,16 @@ public class JavaFileObject {
     private String packageName;
     // 类文件
     private File file;
-    // 完整路径的文件名，例如：E:\\code\\xxx.java，后缀是一定带有 .java 的
+    // 完整路径的文件名，例如：E:\\code\\xxx.java，后缀是一定带有的
     private String completeFileName;
     // 导入的其他依赖或包名，例如：com.xxx.*
-    private List<String> importClass = new ArrayList<>();
+    private Set<String> importClass = new HashSet<>();
     // 类路径的文件名，例如：com.xxx.*，后缀什么都没带
     private String classPathClassName;
     // 类名，例如：User.class -> User
     private String className;
     // 实现的接口名
-    private List<String> implementedInterface = new ArrayList<>();
+    private Set<String> implementedInterface = new HashSet<>();
     // 字段列表，例如：private Object a = 19
     private List<String> fieldList = new ArrayList<>();
     // 方法列表，例如：public String register() {return "register 成功"}
@@ -143,7 +140,7 @@ public class JavaFileObject {
      *
      * @param interfaceClass 传过来的接口参数
      */
-    public void implementInterfaceClass(Class<?> interfaceClass) {
+    public void implementInterfaceClass(Class<?> interfaceClass) throws ClassNotFoundException {
         Method[] interfaceClassMethods = interfaceClass.getDeclaredMethods();
         List<String> methodsList = new ArrayList<>();
         for (Method method : interfaceClassMethods) {
@@ -178,7 +175,7 @@ public class JavaFileObject {
     /**
      * 整合代码到内存中
      */
-    public void compoundJavaCode() {
+    public void compoundJavaCode() throws ClassNotFoundException {
         String p0 = "$package$";
         String i0 = "$import$";
         String c0 = "$class0$";
@@ -187,7 +184,7 @@ public class JavaFileObject {
         String c1 = "$class1$";
         StringBuilder interfaces = new StringBuilder();
         // 导入类
-        List<String> anInterface = getImplementedInterface();
+        Set<String> anInterface = getImplementedInterface();
         String replace = file.getAbsolutePath().replace("\\", ".");
         String substring = replace.substring(0, replace.lastIndexOf("."));
         int i = substring.indexOf(classPathClassName);
@@ -210,8 +207,13 @@ public class JavaFileObject {
                 javaCode.indexOf(i0) + i0.length(), sb + "\n");
         StringBuilder s = new StringBuilder().append("public class ").
                 append(file.getName(), 0, file.getName().lastIndexOf("."));
+        Class<?> clazz = Class.forName(String.valueOf(interfaces));
         if (interfaces.length() > 1) {
-            s.append(" implements ").append(interfaces);
+            if (clazz.isInterface()) {
+                s.append(" implements ").append(interfaces);
+            } else {
+                s.append(" extends ").append(interfaces);
+            }
         }
         // 替换 class0
         javaCode.replace(javaCode.indexOf(c0),
@@ -254,11 +256,11 @@ public class JavaFileObject {
         this.packageName = packageName;
     }
 
-    public List<String> getImportClass() {
+    public Set<String> getImportClass() {
         return importClass;
     }
 
-    public void setImportClass(List<String> importClass) {
+    public void setImportClass(Set<String> importClass) {
         this.importClass = importClass;
     }
 
@@ -314,11 +316,11 @@ public class JavaFileObject {
         return javaCode;
     }
 
-    public List<String> getImplementedInterface() {
+    public Set<String> getImplementedInterface() {
         return implementedInterface;
     }
 
-    public void setImplementedInterface(List<String> implementedInterface) {
+    public void setImplementedInterface(Set<String> implementedInterface) {
         this.implementedInterface = implementedInterface;
     }
 

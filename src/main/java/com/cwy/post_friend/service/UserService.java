@@ -12,5 +12,5 @@ import com.cwy.post_friend.frame.annotation.ordinary.Service;
  */
 
 public interface UserService {
-    void register();
+    void register(int i);
 }

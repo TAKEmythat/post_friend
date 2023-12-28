@@ -50,7 +50,7 @@ public class DaoProxy {
         int importSign = javaCode.indexOf("\n") + 1;
         StringBuilder fieldCode = new StringBuilder();
         StringBuilder methodCode = new StringBuilder();
-        List<String> importClass = javaFileObject.getImportClass();
+        Set<String> importClass = javaFileObject.getImportClass();
         // 清空函数区
         javaCode.replace(javaCode.indexOf("{") + 1, javaCode.lastIndexOf("}"), "\n\n");
         javaCode.append("       ");

@@ -1,5 +1,7 @@
 package com.cwy.post_friend.frame.controller;
 
+import com.cwy.post_friend.frame.bean.JavaFileObject;
+import com.cwy.post_friend.frame.enum_.InsertMethod;
 import com.cwy.post_friend.frame.exception.AnnotationException;
 import com.cwy.post_friend.frame.annotation.aop.*;
 import com.cwy.post_friend.frame.annotation.ordinary.Component;
@@ -24,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * 负责创建动态代理对象
@@ -47,8 +50,9 @@ public class ProxyServlet extends HttpServlet {
             // 扫描并代理项目中有指定注解的类
             scanningProjectAllClassHasAnnotation();
         } catch (URISyntaxException | AnnotationException | ClassNotFoundException | ParserConfigurationException |
-                 IOException | SAXException | InstantiationException | IllegalAccessException | InterruptedException e) {
-                throw new RuntimeException(e);
+                 IOException | SAXException | InstantiationException | IllegalAccessException |
+                 InterruptedException e) {
+            throw new RuntimeException(e);
         }
         super.init();
     }
@@ -71,6 +75,35 @@ public class ProxyServlet extends HttpServlet {
         // 循环所有类
         if (classList.size() > 0) {
             for (Class<?> clazz : classList) {
+                Method[] clazzDeclaredMethods = clazz.getDeclaredMethods();
+                JavaFileObject javaFileObject = new JavaFileObject(clazz.getName(), "");
+                // 如果类上有日志相关的注解的话，生成代理的 Service
+                if (clazz.getDeclaredAnnotation(Journal.class) != null) {
+                    Class<?> clazz0 = DynamicallyGenerateImplementationClasses.generateInheritanceClass(javaFileObject,
+                            true, InsertMethod.JOURNAL);
+                    beanFactory.insertOrdinaryBeans(clazz.getSimpleName(), clazz0.newInstance());
+                }
+                // 如果函数上有 AOP 相关的注解的话，生成代理的 Service
+                for (Method method : clazzDeclaredMethods) {
+                    Transaction transaction = method.getDeclaredAnnotation(Transaction.class);
+                    AOPStart aopStart = method.getDeclaredAnnotation(AOPStart.class);
+                    AOPEnd aopEnd = method.getDeclaredAnnotation(AOPEnd.class);
+                    AOPCatch aopCatch = method.getDeclaredAnnotation(AOPCatch.class);
+                    // 添加事务开启、关闭、回滚代码
+                    if (transaction != null) {
+                        DynamicallyGenerateImplementationClasses.
+                                generateInheritanceClass(javaFileObject, false, InsertMethod.TRANSACTION, method);
+                    }
+                    // 添加前置代码
+                    if (aopStart != null) {
+                    }
+                    // 添加后置代码
+                    if (aopEnd != null) {
+                    }
+                    // 添加错误处理代码
+                    if (aopCatch != null) {
+                    }
+                }
                 // 检查是否为接口，并且还需要是 Dao
                 if (clazz.isInterface() && clazz.getDeclaredAnnotation(Dao.class) != null) {
                     String clazzName = clazz.getName();
@@ -80,14 +113,6 @@ public class ProxyServlet extends HttpServlet {
                     beanFactory.insertOrdinaryBeans(clazzName.substring(clazzName.lastIndexOf(".") + 1),
                             clazz0.newInstance());
                 }
-                // 如果函数上有 AOP 相关的注解的话，生成代理的 Service
-                //Method[] declaredMethods = clazz.getDeclaredMethods();
-                //if (clazz.getDeclaredAnnotation(AOPStart.class) != null ||
-                //        clazz.getDeclaredAnnotation(AOPEnd.class) != null ||
-                //clazz.getDeclaredAnnotation(AOPCatch.class) != null ||
-                //clazz.getDeclaredAnnotation(Journal.class) != null ||
-                //clazz.getDeclaredAnnotation(Transaction.class) != null) {
-                //}
             }
         }
     }

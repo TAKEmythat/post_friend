@@ -3,6 +3,7 @@ package com.cwy.post_friend.controller;
 import com.cwy.post_friend.bean.User;
 import com.cwy.post_friend.frame.annotation.injection.RealBean;
 import com.cwy.post_friend.frame.annotation.ordinary.Controller;
+import com.cwy.post_friend.frame.annotation.reponse.Response;
 import com.cwy.post_friend.frame.annotation.request.RequestBody;
 import com.cwy.post_friend.frame.annotation.request.RequestMapping;
 import com.cwy.post_friend.frame.annotation.request.RequestParam;
@@ -28,6 +29,7 @@ public class UserController extends DispatcherServlet {
     private UserService userService;
 
     @RequestMapping(value = "/index",mode = RequestMode.POST)
+    @Response
     public String index(HttpServletRequest request, HttpServletResponse response, @RequestBody User user, @RequestParam("name") String name) {
 //        方法传参除了req和resp以外，需要写requestParam来获得request.getParameterMap的内容，不写则会报错
         System.out.println(request);
@@ -35,7 +37,7 @@ public class UserController extends DispatcherServlet {
         System.out.println("name = " + name);
         System.out.println("user = " + user);
         request.setAttribute("user",user);
-        userService.register();
+        userService.register(2);
         return "index";
     }
 }

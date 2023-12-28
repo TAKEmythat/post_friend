@@ -60,7 +60,6 @@ public class DispatcherServlet extends HttpServlet {
         // 视图解析器
         String prefix = getServletConfig().getInitParameter("prefix");
         String suffix = getServletConfig().getInitParameter("suffix");
-        internalResourceViewResolver = new InternalResourceViewResolver(prefix, suffix);
     }
 
     /**

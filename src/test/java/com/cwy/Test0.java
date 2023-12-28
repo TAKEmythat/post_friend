@@ -4,6 +4,8 @@ import com.cwy.post_friend.frame.bean.JavaFileObject;
 import com.cwy.post_friend.frame.bean.XMLObject;
 import com.cwy.post_friend.frame.tool.DynamicallyGenerateImplementationClasses;
 import com.cwy.post_friend.frame.tool.XMLAnalysis;
+import com.cwy.test_class.AClass;
+import com.cwy.test_class.AInheritAClass;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -54,5 +56,11 @@ public class Test0 {
                 ".0-SNAPSHOT\\WEB-INF\\classes\\com\\cwy\\post_friend\\dao\\A.java");
         JavaFileObject javaFileObject = new JavaFileObject(file);
         System.out.println("javaFileObject = " + javaFileObject);
+    }
+
+    @Test
+    public void Test0_3() {
+        AInheritAClass aInheritAClass = new AInheritAClass();
+        aInheritAClass.a0();
     }
 }
